@@ -3,11 +3,15 @@
 
 # Optionally glob, but only for CMake 3.12 or later:
 file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${ExecutionNodes_SOURCE_DIR}/include/*/*.h")
-file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${ExecutionNodes_SOURCE_DIR}/include/*/*.hpp")
 #set(HEADER_LIST "${ModernCMakeExample_SOURCE_DIR}/include/modern/lib.hpp")
+file(GLOB SOURCE_LIST CONFIGURE_DEPENDS "${ExecutionNodes_SOURCE_DIR}/src/*.cpp")
+
 
 # Make an automatic library - will be static or dynamic based on user setting
 add_library(lib_execution_nodes execution_nodes.cpp ${HEADER_LIST})
+
+# Add source files
+target_sources(lib_execution_nodes PRIVATE ${SOURCE_LIST})
 
 # We need this directory, and users of our library will need it too
 target_include_directories(lib_execution_nodes PUBLIC ../include)
