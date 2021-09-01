@@ -1,10 +1,8 @@
 #pragma once
 #include <execution_nodes/node.h>
-#include <spdlog/spdlog.h>
+#include <execution_nodes/logging.hpp>
 
 namespace execution_nodes {
-
-ConnectionId hash(const std::string &str) { return 0; }
 
 Node::Node(const NodeDefinition &nodeDefinition,
            const std::shared_ptr<Connector> &connector)
@@ -12,7 +10,7 @@ Node::Node(const NodeDefinition &nodeDefinition,
       settings_(nodeDefinition.settings), connector_(connector) {
 
   for (const auto &i : nodeDefinition.inputs) {
-    inputs_[i.first] = hash(i.second);
+    inputs_[i.first] = Connector::hash(i.second);
     portTypeMap_[i.first] = PortType::INPUT;
   }
 
@@ -20,15 +18,47 @@ Node::Node(const NodeDefinition &nodeDefinition,
 
     if (portTypeMap_.find(o.first) != portTypeMap_.end()) {
 
-      spdlog::error("The port name {} is already defined as input port. Port "
+      Log::throwError("The port name {} is already defined as input port. Port "
                     "names must be unique per node.",
                     o.first);
-      throw std::runtime_error("todo");
     } else {
-      outputs_[o.first] = hash(o.second);
+      outputs_[o.first] = Connector::hash(o.second);
       portTypeMap_[o.first] = PortType::OUTPUT;
     }
   }
 }
 
+bool Node::hasInput(const std::string &portName) {
+  bool retval = false;
+  auto iter = portTypeMap_.find(portName);
+  if (iter == portTypeMap_.end()) {
+    retval = false;
+  } else if (iter->second == PortType::INPUT) {
+    retval = connector_->hasObject(Connector::createPortId(name_, portName));
+  } else {
+    Log::warning("Node '{}' of type '{}' is asking for input on port '{}' "
+                 "which is not an input port",
+                 name_, type_, portName);
+    retval = false;
+  }
+  return retval;
+}
+
+std::string Node::getName() { return name_; }
+std::string Node::getType() { return type_; }
+std::vector<std::string> Node::getInputPortNames() {
+
+  std::vector<std::string> retval;
+  for (const auto &kvp : inputs_) {
+    retval.emplace_back(kvp.first);
+  }
+  return retval;
+}
+std::vector<std::string> Node::getOutputPortNames() {
+  std::vector<std::string> retval;
+  for (const auto &kvp : outputs_) {
+    retval.emplace_back(kvp.first);
+  }
+  return retval;
+}
 } // namespace execution_nodes
