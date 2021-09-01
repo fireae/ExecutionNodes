@@ -75,18 +75,20 @@ void Connector::setObject(const PortId &portId, const std::any &obj) {
   auto iter = portTypeMap_.find(portId);
 
   if (iter == portTypeMap_.end()) {
-    /*
-      Log::throwError("Error when setting output at port '", portName,
-                    "' in node '", name_, "' of type '", type_,
-                    "': "
-                    "This port is undefined.");
-    */
+
+
+    Log().Error() << "Error when setting output at port ' " << portId
+              << "This port is undefined.";
+
   } else if (iter->second == PortType::OUTPUT) {
     auto connection = getConnectionByPortId(portId);
     if (connection != no_connection) {
       objectsMap_[connection] = obj;
     }
   } else {
+
+    Log().Error() << "Error when setting output at port ' " << portId
+              << "This port is not an output port.";
   }
 }
 
@@ -104,11 +106,10 @@ bool Connector::hasObject(const PortId &portId) {
       retval = false;
     }
   } else {
-    /*
-      Log::warning("Node '{}' of type '{}' is asking for input on port '{}' "
-                 "which is not an input port",
-                 name_, type_, portName);
-    */
+
+    Log().Warning() << "The port " << portId
+              << " is asking for input but it is not an input port.";
+
     retval = false;
   }
   return retval;
@@ -118,12 +119,10 @@ void Connector::getObject(const PortId &portId, std::any &obj) {
 
   auto iter = portTypeMap_.find(portId);
   if (iter == portTypeMap_.end()) {
-    /*
-      Log::throwError("Node '", name_, "' of type '", type_,
-                    "' is asking for input on port '", portName,
-                    "'. "
-                    "This port is not defined.");
-    */
+
+    Log().Error() << "The port " << portId
+              << " is asking for input but it is not an input port.";
+
   } else if (iter->second == PortType::INPUT) {
 
     auto connection = getConnectionByPortId(portId);
@@ -133,28 +132,22 @@ void Connector::getObject(const PortId &portId, std::any &obj) {
       if (iter != objectsMap_.end()) {
         obj = iter->second;
       } else {
-        /*
-          Log::throwError(
-            "Error when getting object for port id '{}'. Object does not "
-              "exist.",
-              portId);
-        */
+
+        Log().Error(true) << "Error when getting object for port id " << portId
+                  << ". Object does not exist.";
+        throw std::runtime_error("");
       }
     } else {
-      /*
-        Log::throwError(
-          "Error when getting object for port id '{}'. Port has no
-        connection.");
-      */
+
+      Log().Error() << "Error when getting object for port id " << portId
+                << ". This port as no connection.";
+      throw std::runtime_error("");
     }
 
   } else {
-    /*
-       Log::throwError("Node '", name_, "' of type '", type_,
-                     "' is asking for input on port '", portName,
-                     "'."
-                     "This port is not defined as input port");
-    */
+
+    Log().Error() << "Error when getting object for port id " << portId
+              << ". This port is not an input port.";
   }
 }
 /*
