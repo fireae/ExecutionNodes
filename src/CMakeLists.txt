@@ -15,7 +15,22 @@ target_sources(lib_execution_nodes PRIVATE ${SOURCE_LIST})
 
 # We need this directory, and users of our library will need it too
 target_include_directories(lib_execution_nodes PUBLIC ../include)
-target_include_directories(lib_execution_nodes PUBLIC nlohmann_json::nlohmann_json)
+
+if(USE_EXTERNAL_NLOHMANN_JSON)
+  find_package(nlohmann_json 3.10.2 REQUIRED)
+else()
+  FetchContent_Declare(json
+  GIT_REPOSITORY https://github.com/ArthurSonzogni/nlohmann_json_cmake_fetchcontent
+  GIT_TAG v3.10.2)
+
+  FetchContent_GetProperties(json)
+  if(NOT json_POPULATED)
+  FetchContent_Populate(json)
+  add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
+
+  endif()
+  endif()
+target_link_libraries(lib_execution_nodes PUBLIC nlohmann_json::nlohmann_json)
 
 
 # All users of this library will need at least C++17
