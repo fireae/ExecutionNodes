@@ -2,7 +2,7 @@
 # show up in IDEs unless they are listed in add_library.
 
 # Optionally glob, but only for CMake 3.12 or later:
-file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${ExecutionNodes_SOURCE_DIR}/include/*/*.h")
+file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${ExecutionNodes_SOURCE_DIR}/include/*/*.h*")
 #set(HEADER_LIST "${ModernCMakeExample_SOURCE_DIR}/include/modern/lib.hpp")
 file(GLOB SOURCE_LIST CONFIGURE_DEPENDS "${ExecutionNodes_SOURCE_DIR}/src/*.cpp")
 
