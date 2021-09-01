@@ -15,7 +15,7 @@ target_sources(lib_execution_nodes PRIVATE ${SOURCE_LIST})
 
 # We need this directory, and users of our library will need it too
 target_include_directories(lib_execution_nodes PUBLIC ../include)
-target_include_directories(lib_execution_nodes PUBLIC ../third_party/nlohmann/v3.10.2/single_include)
+#target_include_directories(lib_execution_nodes PUBLIC ../third_party/nlohmann/v3.10.2/single_include)
 
 
 # All users of this library will need at least C++17
