@@ -1,5 +1,5 @@
 #include <execution_nodes/node_definition.h>
-#include <spdlog/spdlog.h>
+#include <execution_nodes/logging.hpp>
 
 namespace execution_nodes {
 
@@ -11,7 +11,7 @@ void from_json(const nlohmann::json &j, NodeDefinition &d) {
     j.at("type").get_to(d.type);
 
   } catch (const std::exception &ex) {
-    spdlog::error(
+    Log::error(
         "Unable to parse name or type of node definition from json: {}",
         ex.what());
     throw;
@@ -37,7 +37,7 @@ void from_json(const nlohmann::json &j, NodeDefinition &d) {
 
     d.settings = j.at("settings").get<nlohmann::json>();
   } catch (const std::exception &ex) {
-    spdlog::error(
+    Log::error(
         "Unable to parse node definition for node {} of type {} from json: {}",
         d.name, d.type, ex.what());
     throw;
