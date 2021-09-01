@@ -31,6 +31,10 @@ endif()
 
 # FetchContent added in CMake 3.11, downloads during the configure step
 include(FetchContent)
+
+option(USE_EXTERNAL_NLOHMANN_JSON "Use an externally provided nlohmann JSON library" OFF)
+
+
 # FetchContent_MakeAvailable was not added until CMake 3.14; use our shim
 #if(${CMAKE_VERSION} VERSION_LESS 3.14)
 #  include(cmake/add_FetchContent_MakeAvailable.cmake)
