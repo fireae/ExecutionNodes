@@ -6,23 +6,17 @@
 
 namespace execution_nodes {
 
-enum class PortType : uint8_t {
-  INPUT,
-  OUTPUT,
-};
-
-struct Port {
-  PortType type;
-  std::string connection;
-};
 
 struct NodeDefinition {
-  bool enabled;
   std::string name;
   std::string type;
-  std::map<std::string /*name*/, std::string /*connection*/> inputs;
-  std::map<std::string /*name*/, std::string /*connection*/> outputs;
+  //std::map<std::string /*name*/, std::string /*connection*/> inputs;
+  //std::map<std::string /*name*/, std::string /*connection*/> outputs;
   nlohmann::json settings;
+
+  NodeDefinition();
+  NodeDefinition(const std::string nodeName, const std::string& nodeType, nlohmann::json nodeSettings);
+  NodeDefinition(const std::string nodeName, const std::string &nodeType);
 };
 
 void from_json(const nlohmann::json &j, NodeDefinition &d);
