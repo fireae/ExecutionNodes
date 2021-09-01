@@ -12,8 +12,7 @@ namespace execution_nodes {
 
 class Node {
 public:
-  Node(const NodeDefinition &nodeDefinition,
-       const std::shared_ptr<Connector> &connector);
+  Node(const NodeDefinition &nodeDefinition, const ConnectorPtr &connector);
   virtual void execute() = 0;
 
   std::string getName();
@@ -36,7 +35,7 @@ protected:
       Log::throwError(
           "Error when setting output port '{}' in node '{}' of type '{}': "
             "This port id not defined as output.",
-            portName, name_, type_)
+            portName, name_, type_);
     }
   }
   bool hasInput(const std::string &portName);
@@ -72,6 +71,10 @@ protected:
             "This port is not defined as input port",
             name_, type_, portName);
     }
+  }
+
+  template <class T> T getSetting(const std::string &key) {
+    return settings_[key].get<T>();
   }
 
 private:
