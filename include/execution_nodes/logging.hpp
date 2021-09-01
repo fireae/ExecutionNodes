@@ -1,51 +1,46 @@
 #pragma once
 
+#include <ctime>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <memory>
-#include <strstream>
+#include <sstream>
 #include <utility>
 #include <vector>
 
 namespace execution_nodes {
 
-struct Warning {};
+enum class LogLevel : uint8_t {
+  LVL_ERROR,
+  LVL_WARNING,
+  LVL_INFO,
+  LVL_DEBUG,
+};
 
-extern Warning warning;
+class Log {
+public:
+  Log();
+  virtual ~Log();
+  std::ostringstream &ErrorThrow();
+  std::ostringstream &Error(bool throwException = false);
+  std::ostringstream &Warning();
+  std::ostringstream &Info();
+  std::ostringstream &Debug();
 
-template <typename T> Warning &operator<<(Warning &s, const T &x) {
-  std::cout << "[Warning] " <<  x;
-  return s;
-}
+public:
+  static LogLevel &getLogLevel();
+  static void setLogLevel(LogLevel level);
 
-/*
-
-struct Log {
-
-  template <class... A> static void error(A &&...a) {
-    errorImpl(
-        {[&a](std::strstream &ststr) { ststr << std::forward<A>(a); }...});
-  }
-
-  template <class... A> static void warning(A &&...a) {
-
-      warningImpl(
-        {[&a](std::strstream &ststr) { ststr << std::forward<A>(a); }...});
-
-  }
-
-  template <class... A> static void throwError(A &&...a) {
-    throwErrorImpl(
-        {[&a](std::strstream &ststr) { ststr << std::forward<A>(a); }...});
-  }
+protected:
+  bool doThrow;
+  std::ostringstream os;
+  LogLevel messageLevel;
 
 private:
-  static void errorImpl(std::vector<std::function<void(std::strstream &)>> v);
-  static void
-  throwErrorImpl(std::vector<std::function<void(std::strstream &)>> v);
-  static void warningImpl(std::vector<std::function<void(std::strstream &)>> v);
-  struct Impl;
-  static std::unique_ptr<Impl> impl_;
+  Log(const Log &);
+  Log &operator=(const Log &) = delete;
+  static LogLevel logginglevel;
 };
-*/
+
 } // namespace execution_nodes
