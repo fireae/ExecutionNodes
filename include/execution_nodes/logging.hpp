@@ -9,6 +9,17 @@
 
 namespace execution_nodes {
 
+struct Warning {};
+
+extern Warning warning;
+
+template <typename T> Warning &operator<<(Warning &s, const T &x) {
+  std::cout << "[Warning] " <<  x;
+  return s;
+}
+
+/*
+
 struct Log {
 
   template <class... A> static void error(A &&...a) {
@@ -17,7 +28,7 @@ struct Log {
   }
 
   template <class... A> static void warning(A &&...a) {
-  
+
       warningImpl(
         {[&a](std::strstream &ststr) { ststr << std::forward<A>(a); }...});
 
@@ -36,4 +47,5 @@ private:
   struct Impl;
   static std::unique_ptr<Impl> impl_;
 };
+*/
 } // namespace execution_nodes

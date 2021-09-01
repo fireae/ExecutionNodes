@@ -6,6 +6,7 @@
 
 namespace execution_nodes {
 
+    /*
 struct Log::Impl {};
 
 std::string convert(std::vector<std::function<void(std::strstream &)>> v) {
@@ -33,5 +34,6 @@ void Log::throwErrorImpl(std::vector<std::function<void(std::strstream &)>> v) {
 
 std::unique_ptr<Log::Impl> Log::impl_ =
     std::make_unique<Log::Impl>(Log::Impl());
+    */
 
 } // namespace execution_nodes
