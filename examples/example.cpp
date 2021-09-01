@@ -5,10 +5,10 @@
 
 using namespace execution_nodes;
 
-class RNG : public execution_nodes::Node {
+class RandomNumberGenerator : public execution_nodes::Node {
 
 public:
-  RNG(const NodeDefinition &definition,
+  RandomNumberGenerator(const NodeDefinition &definition,
       const ConnectorPtr &connector)
       : execution_nodes::Node(definition, connector) {
 
@@ -28,4 +28,10 @@ private:
   std::uniform_int_distribution<int> distr_;
 };
 
-int main() {}
+int main() {
+
+    ConnectorPtr connector = std::make_shared<Connector>();
+
+    //connector->registerConnection()
+
+}
