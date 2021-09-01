@@ -8,10 +8,7 @@
 
 namespace execution_nodes {
 
-ConnectionId hash(const std::string &str);
-typedef std::string PortId;
-
-PortId createPortId(const std::string& nodeName, const std::string& portName);
+  typedef std::string PortId;
 
 class Connector {
 public:
@@ -21,13 +18,23 @@ public:
                           const std::string &portName,
                           const std::string &connection);
 
-  void setObject(ConnectionId connection, const std::any &obj);
+  void setObject(const PortId &portId, const std::any &obj);
+  void setObject(const PortId &portId, const std::any &&obj);
+  bool hasObject(const PortId &portId);
+  void getObject(const PortId &portId, std::any &obj);
+  //const std::any &getObject(ConnectionId connection);
 
-  void getObject(ConnectionId connection, std::any &obj);
+  static ConnectionId hash(const std::string &str);
+
+  static PortId createPortId(const std::string &nodeName, const std::string &portName);
+
 
 private:
-  std::map<ConnectionId, std::any> objects_;
 
+  ConnectionId getConnectionByPortId(const PortId& portId);
+
+  std::map<ConnectionId, std::any> objectsMap_;
+  std::map<PortId, ConnectionId> connectionMap_;
 };
 
 } // namespace execution_nodes
