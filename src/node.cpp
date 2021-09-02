@@ -8,26 +8,6 @@ Node::Node(const NodeDefinition &nodeDefinition,
            const std::shared_ptr<Connector> &connector)
     : name_(nodeDefinition.name), type_(nodeDefinition.type),
       settings_(nodeDefinition.settings), connector_(connector) {
-
-  /*
-for (const auto &i : nodeDefinition.inputs) {
-  inputs_[i.first] = Connector::hash(i.second);
-  portTypeMap_[i.first] = PortType::INPUT;
-}
-
-for (const auto &o : nodeDefinition.outputs) {
-
-  if (portTypeMap_.find(o.first) != portTypeMap_.end()) {
-
-    Log::throwError("The port name {} is already defined as input port. Port "
-                  "names must be unique per node.",
-                  o.first);
-  } else {
-    outputs_[o.first] = Connector::hash(o.second);
-    portTypeMap_[o.first] = PortType::OUTPUT;
-  }
-}
-  */
 }
 
 bool Node::hasInput(const std::string &portName) {
