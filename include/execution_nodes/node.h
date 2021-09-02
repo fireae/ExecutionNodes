@@ -16,40 +16,34 @@ public:
   std::string getName();
   std::string getType();
 
-
 protected:
   template <class T> void setOutput(const std::string &portName, const T &obj) {
 
-      connector_->setObject(Connector::createPortId(name_, portName), obj);
+    connector_->setObject(Connector::createPortId(name_, portName), obj);
   }
   bool hasInput(const std::string &portName);
   template <class T> void getInput(const std::string &portName, T &obj) {
 
-      try {
-        std::any anyObj;
-        connector_->getObject(Connector::createPortId(name_, portName), anyObj);
-        obj = std::any_cast<T>(anyObj);
-      } catch (const std::bad_any_cast &bac) {
-       /*
-          Log::throwError(
-            "Error in node '", name_, "' of type '", type_,
-            "' when getting object from input "
-            "on port '",
-            portName,
-            "'. This error might come "
-            "from a wrong typename in the template argument. Additional "
-            "information: ",
-            bac.what());
-       */
-      } catch (const std::exception &ex) {
-       /*
-          Log::throwError("Error in node '", name_, "' of type '", type_,
-                        "' when getting object from input "
-                        "on port '",
-                        portName, "'. Additional information: ", ex.what());
-       */
-      }
+    try {
+      std::any anyObj;
+      connector_->getObject(Connector::createPortId(name_, portName), anyObj);
+      obj = std::any_cast<T>(anyObj);
+    } catch (const std::bad_any_cast &bac) {
 
+      Log().ErrorThrow() << "Error in node '" << name_ << "' of type '" << type_
+                         << "' when getting object from input on port '"
+                         << portName
+                         << "'. This error might come from a wrong typename in "
+                            "the template argument. Additional information: "
+                         << bac.what();
+
+    } catch (const std::exception &ex) {
+
+      Log().ErrorThrow() << "Error in node '" << name_ << "' of type '" << type_
+                         << "' when getting object from input on port '"
+                         << portName
+                         << "'. Additional information: " << ex.what();
+    }
   }
 
   template <class T> T getSetting(const std::string &key) {
