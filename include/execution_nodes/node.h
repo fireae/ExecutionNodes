@@ -57,10 +57,15 @@ private:
   std::shared_ptr<Connector> connector_;
 };
 
+typedef std::unique_ptr<Node> NodePtr;
+
 template <class DerivedNodeType>
-std::unique_ptr<Node> createNode(const NodeDefinition &nodeDefinition,
+NodePtr createNode(const NodeDefinition &nodeDefinition,
                                  const std::shared_ptr<Connector> &connector) {
-  return std::make_unique<Node>(DerivedNodeType(nodeDefinition, connector));
+  return std::make_unique<DerivedNodeType>(
+      DerivedNodeType(nodeDefinition, connector));
 }
+
+
 
 } // namespace execution_nodes
