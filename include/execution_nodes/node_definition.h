@@ -1,8 +1,6 @@
 #pragma once
 
-#include <map>
 #include <nlohmann/json.hpp>
-#include <string>
 
 namespace execution_nodes {
 
@@ -10,8 +8,6 @@ namespace execution_nodes {
 struct NodeDefinition {
   std::string name;
   std::string type;
-  //std::map<std::string /*name*/, std::string /*connection*/> inputs;
-  //std::map<std::string /*name*/, std::string /*connection*/> outputs;
   nlohmann::json settings;
 
   NodeDefinition();
