@@ -4,8 +4,7 @@
 
 namespace execution_nodes {
 
-Node::Node(const NodeDefinition &nodeDefinition,
-           const std::shared_ptr<Connector> &connector)
+Node::Node(const NodeDefinition &nodeDefinition, const ConnectorPtr &connector)
     : name_(nodeDefinition.name), type_(nodeDefinition.type),
       settings_(nodeDefinition.settings), connector_(connector) {
 }
