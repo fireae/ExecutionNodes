@@ -78,9 +78,6 @@ Log::~Log() {
     if (doThrow) {
       throw std::runtime_error(msg);
     }
-
-    // fprintf(stderr, "%s", os.str().c_str());
-    // fflush(stderr);
   }
 }
 
