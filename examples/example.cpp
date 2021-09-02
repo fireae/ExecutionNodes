@@ -1,5 +1,6 @@
 #include <execution_nodes/execution_nodes.h>
 #include <execution_nodes/node.h>
+#include <execution_nodes/node_registry.h>
 #include <iostream>
 #include <random>
 
@@ -11,8 +12,7 @@ public:
   RandomNumberGenerator(const NodeDefinition &definition,
                         const ConnectorPtr &connector)
       : execution_nodes::Node(definition, connector),
-        distr_(std::uniform_int_distribution<int>(0, 100))
-  {
+        distr_(std::uniform_int_distribution<int>(0, 100)) {
 
     uint64_t seed = getSetting<uint64_t>("seed");
     randomEngine_ = std::mt19937_64(seed);
@@ -68,12 +68,41 @@ public:
 
 int main() {
 
+  NodeRegistry registry = {
+      REGISTER(Adder),
+      REGISTER(RandomNumberGenerator),
+      REGISTER(NumberPrinter),
+  };
+
+  std::vector<std::pair<std::string, std::string>> vps;
+
+  vps.emplace_back(std::pair<std::string, std::string>("a:a", "b:b"));
+
+  nlohmann::json j;
+
+  j = vps;
+
+  std::cout << j.dump(2);
+
+  std::string filePath =
+      "C:/Users/Sebastian/source/repos/ExecutionNodes/examples/concept_2.json";
+
+  GraphDefinition graphDef = loadGraphDefFromJson(filePath);
+
+  Graph graph(graphDef, registry);
+
+  graph.execute();
+
+
+  /*
   ConnectorPtr connector = std::make_shared<Connector>();
 
   NodeDefinition defRng1("rng1", "RandomNumberGenerator", {{"seed", 42}});
   NodeDefinition defRng2("rng2", "RandomNumberGenerator", {{"seed", 69}});
   NodeDefinition defAdder("adder", "Adder");
   NodeDefinition defPrinter("printer", "NumberPrinter");
+
+  std::unique_ptr<Node> node = registry.at("Adder")(defRng1, connector);
 
   RandomNumberGenerator rng1(defRng1, connector);
   RandomNumberGenerator rng2(defRng2, connector);
@@ -88,4 +117,5 @@ int main() {
   rng2.execute();
   adder.execute();
   printer.execute();
+  */
 }
