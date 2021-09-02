@@ -3,4 +3,5 @@
 #include <execution_nodes/connector.h>
 #include <execution_nodes/node.h>
 #include <execution_nodes/graph.h>
+#include <execution_nodes/graph_definition.h>
 
