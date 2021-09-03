@@ -10,8 +10,8 @@ size_t getIndexOfElement(const std::string &element,
       return i;
     }
   }
-  Log().ErrorThrow() << "Error when sorting nodes. Unable to find '" << element
-                     << "' in the list.";
+  Log().ErrorThrow() << "Error when sorting nodes. Unable to find node '"
+                     << element << "' in the list of connections";
 }
 
 Graph::Graph(const GraphDefinition &graphDefinition,
@@ -55,9 +55,38 @@ std::string toString(const ConnectionDefinition &cn) {
          ":" + cn.dst.portName;
 }
 
+void Graph::checkIfConnectionIsValid(const ConnectionDefinition &connection) {
+
+  bool dstExists = false;
+  bool srcExists = false;
+
+  for (const auto &node : nodes_) {
+    std::string nodeName = node->getName();
+
+    if (nodeName == connection.dst.nodeName) {
+      dstExists = true;
+    } else if (nodeName == connection.src.nodeName) {
+      srcExists = true;
+    }
+  }
+
+  if (srcExists == false) {
+    Log().ErrorThrow() << "Error when adding connection. The source node '"
+                       << connection.src.nodeName << "' does not exist.";
+  }
+
+  if (dstExists == false) {
+    Log().ErrorThrow() << "Error when adding connection. The destination node '"
+                       << connection.dst.nodeName << "' does not exist.";
+  }
+}
+
 void Graph::addConnection(ConnectionDefinition connection, bool reorderNodes) {
 
+  checkIfConnectionIsValid(connection);
+
   if (connections_.find(connection) == connections_.end()) {
+
     connections_.insert(connection);
     connector_->connect(connection.src, connection.dst);
     Log().Debug() << "Added connection " << toString(connection);

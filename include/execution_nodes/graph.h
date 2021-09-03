@@ -26,6 +26,8 @@ private:
   std::vector<std::unique_ptr<Node>> nodes_;
   std::set<ConnectionDefinition> connections_;
   void sortNodes();
+
+  void checkIfConnectionIsValid(const ConnectionDefinition &connection);
 };
 
 } // namespace execution_nodes
