@@ -150,8 +150,8 @@ void Connector::getObject(const PortId &portId, std::any &obj) {
   auto iter = portTypeMap_.find(portId);
   if (iter == portTypeMap_.end()) {
 
-    Log().ErrorThrow() << "The port " << portId
-                       << " is asking for input but it is not an input port.";
+    Log().ErrorThrow() << "The undefined port '" << portId
+                       << "' is asking for input.";
 
   } else if (iter->second == PortType::INPUT) {
 
