@@ -19,14 +19,14 @@ public:
 protected:
   template <class T> void setOutput(const std::string &portName, const T &obj) {
 
-    connector_->setObject(Connector::createPortId(name_, portName), obj);
+    connector_->setObject(createPortId(name_, portName), obj);
   }
   bool hasInput(const std::string &portName);
   template <class T> void getInput(const std::string &portName, T &obj) {
 
     try {
       std::any anyObj;
-      connector_->getObject(Connector::createPortId(name_, portName), anyObj);
+      connector_->getObject(createPortId(name_, portName), anyObj);
       obj = std::any_cast<T>(anyObj);
     } catch (const std::bad_any_cast &bac) {
 

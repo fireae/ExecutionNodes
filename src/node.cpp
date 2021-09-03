@@ -10,7 +10,7 @@ Node::Node(const NodeDefinition &nodeDefinition, const ConnectorPtr &connector)
 }
 
 bool Node::hasInput(const std::string &portName) {
-  return connector_->hasObject(Connector::createPortId(name_, portName));
+  return connector_->hasObject(createPortId(name_, portName));
 }
 
 std::string Node::getName() { return name_; }
