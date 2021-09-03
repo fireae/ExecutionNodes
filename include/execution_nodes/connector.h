@@ -9,7 +9,6 @@
 
 namespace execution_nodes {
 
-
 enum class PortType : uint8_t {
   INPUT,
   OUTPUT,
@@ -33,9 +32,12 @@ private:
   std::map<PortId, ConnectionId> connectionMap_;
   std::map<PortId, PortType> portTypeMap_;
 
-  void registerConnection(const std::string &nodeName,
-                          const std::string &portName,
-                          const std::string &connection);
+  void Connector::registerOutput(const std::string &nodeName,
+                                 const std::string &portName);
+
+  void registerAndConnectInput(const std::string &nodeName,
+                               const std::string &portName,
+                               const std::string &connection);
 
   void removeConnection(const std::string &nodeName,
                         const std::string &portName,

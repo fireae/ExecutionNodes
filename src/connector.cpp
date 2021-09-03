@@ -3,14 +3,11 @@
 #include <execution_nodes/connector.h>
 #include <execution_nodes/logging.hpp>
 
-
 #include <string>
 
 #include <functional>
 
 namespace execution_nodes {
-
-
 
 Connector::Connector(){
 
@@ -20,10 +17,9 @@ void Connector::connect(const Port &out, const Port &in) {
 
   auto outPortId = createPortId(out);
   auto inPortId = createPortId(in);
-  auto connectionName = createConnectionName(outPortId, inPortId);
 
-  registerConnection(out.nodeName, out.portName, connectionName);
-  registerConnection(in.nodeName, in.portName, connectionName);
+  registerOutput(out.nodeName, out.portName);
+  registerAndConnectInput(in.nodeName, in.portName, outPortId);
 
   auto iterOut = portTypeMap_.find(outPortId);
 
@@ -54,9 +50,18 @@ void Connector::disconnect(const Port &out, const Port &in) {
   removeConnection(in.nodeName, in.portName, connectionName);
 }
 
-void Connector::registerConnection(const std::string &nodeName,
-                                   const std::string &portName,
-                                   const std::string &connection) {
+void Connector::registerOutput(const std::string &nodeName,
+                               const std::string &portName) {
+
+  auto portId = createPortId(nodeName, portName);
+  if (connectionMap_.find(portId) == connectionMap_.end()) {
+    connectionMap_[portId] = hash(portId);
+  }
+}
+
+void Connector::registerAndConnectInput(const std::string &nodeName,
+                                        const std::string &portName,
+                                        const std::string &connection) {
 
   auto portId = createPortId(nodeName, portName);
   auto connectionId = hash(connection);
@@ -108,8 +113,8 @@ void Connector::setObject(const PortId &portId, const std::any &obj) {
 
   if (iter == portTypeMap_.end()) {
 
-    Log().ErrorThrow() << "Error when setting output at port ' " << portId
-                       << "This port is undefined.";
+    Log().ErrorThrow() << "Error when setting output at port '" << portId
+                       << "' This port is undefined.";
 
   } else if (iter->second == PortType::OUTPUT) {
     auto connection = getConnectionByPortId(portId);
