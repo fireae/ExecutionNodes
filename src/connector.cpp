@@ -18,15 +18,18 @@ void Connector::connect(const Port &out, const Port &in) {
   auto outPortId = createPortId(out);
   auto inPortId = createPortId(in);
 
-  registerOutput(out.nodeName, out.portName);
-  registerAndConnectInput(in.nodeName, in.portName, outPortId);
+  if (outPortId == inPortId) {
+    LOG_ERROR
+        << "Error when connecting ports: The port " << outPortId
+        << " connects to itself. This is not allowed and will be ignored.";
+    return;
+  }
 
   auto iterOut = portTypeMap_.find(outPortId);
-
   if (iterOut == portTypeMap_.end()) {
     portTypeMap_[outPortId] = PortType::OUTPUT;
   } else if (iterOut->second == PortType::INPUT) {
-    Log().ErrorThrow() << "The port '" << outPortId
+    THROW_ERROR << "Error when connecting ports: The port '" << outPortId
                        << "' was defined as input before but is now used as "
                           "output. Port can not be both.";
   }
@@ -35,10 +38,13 @@ void Connector::connect(const Port &out, const Port &in) {
   if (iterIn == portTypeMap_.end()) {
     portTypeMap_[inPortId] = PortType::INPUT;
   } else if (iterIn->second == PortType::OUTPUT) {
-    Log().ErrorThrow() << "The port '" << inPortId
+    THROW_ERROR << "Error when connecting ports: The port '" << inPortId
                        << "' was defined as output before but is now used as "
                           "input. Port can not be both.";
   }
+
+  registerOutput(out.nodeName, out.portName);
+  registerAndConnectInput(in.nodeName, in.portName, outPortId);
 }
 void Connector::disconnect(const Port &out, const Port &in) {
 
@@ -71,9 +77,9 @@ void Connector::registerAndConnectInput(const std::string &nodeName,
     connectionMap_[portId] = connectionId;
   } else {
 
-    Log().ErrorThrow() << "Error when connecting port with id '" << portId
+    THROW_ERROR << "Error when connecting input port '" << portId
                        << "' to '" << connection
-                       << "'. This port is already "
+                       << "'. This input port is already "
                           "connected to '"
                        << iter->second << "'";
   }
@@ -89,7 +95,7 @@ void Connector::removeConnection(const std::string &nodeName,
     connectionMap_.erase(iter);
   } else {
 
-    Log().ErrorThrow() << "Error when disconnecting port with id '" << portId
+    THROW_ERROR << "Error when disconnecting port with id '" << portId
                        << "' from '" << connection
                        << "'. This port has no connection";
   }
@@ -99,7 +105,7 @@ ConnectionId Connector::getConnectionByPortId(const PortId &portId) {
   ConnectionId retval = no_connection;
   auto iter = connectionMap_.find(portId);
   if (iter == connectionMap_.end()) {
-    Log().ErrorThrow() << "Error when getting connection for port id '"
+    THROW_ERROR << "Error when getting connection for port id '"
                        << portId << "'. This port has no connection.";
   } else {
     retval = iter->second;
@@ -113,7 +119,7 @@ void Connector::setObject(const PortId &portId, const std::any &obj) {
 
   if (iter == portTypeMap_.end()) {
 
-    Log().ErrorThrow() << "Error when setting output at port '" << portId
+    THROW_ERROR << "Error when setting output at port '" << portId
                        << "' This port is undefined.";
 
   } else if (iter->second == PortType::OUTPUT) {
@@ -122,7 +128,7 @@ void Connector::setObject(const PortId &portId, const std::any &obj) {
       objectsMap_[connection] = obj;
     }
   } else {
-    Log().ErrorThrow() << "Error when setting output at port ' " << portId
+    THROW_ERROR << "Error when setting output at port ' " << portId
                        << "This port is not an output port.";
   }
 }
@@ -142,7 +148,9 @@ bool Connector::hasObject(const PortId &portId) {
     }
   } else {
 
-    Log().Warning() << "The port " << portId
+      
+
+    LOG_WARNING << "When calling hasObject(): The port " << portId
                     << " is asking for input but it is not an input port.";
 
     retval = false;
@@ -155,7 +163,7 @@ void Connector::getObject(const PortId &portId, std::any &obj) {
   auto iter = portTypeMap_.find(portId);
   if (iter == portTypeMap_.end()) {
 
-    Log().ErrorThrow() << "The undefined port '" << portId
+    THROW_ERROR << "The undefined port '" << portId
                        << "' is asking for input.";
 
   } else if (iter->second == PortType::INPUT) {
@@ -168,18 +176,18 @@ void Connector::getObject(const PortId &portId, std::any &obj) {
         obj = iter->second;
       } else {
 
-        Log().ErrorThrow() << "Error when getting object for port id '"
+        THROW_ERROR << "Error when getting object for port id '"
                            << portId << "'. Object does not exist.";
       }
     } else {
 
-      Log().ErrorThrow() << "Error when getting object for port id '" << portId
+      THROW_ERROR << "Error when getting object for port id '" << portId
                          << "'. This port as no connection.";
     }
 
   } else {
 
-    Log().ErrorThrow() << "Error when getting object for port id " << portId
+    THROW_ERROR << "Error when getting object for port id " << portId
                        << ". This port is not an input port.";
   }
 }
