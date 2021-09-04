@@ -10,7 +10,7 @@ size_t getIndexOfElement(const std::string &element,
       return i;
     }
   }
-  Log().ErrorThrow() << "Error when sorting nodes. Unable to find node '"
+  THROW_ERROR << "Error when sorting nodes. Unable to find node '"
                      << element << "' in the list of connections";
 }
 
@@ -29,15 +29,15 @@ Graph::Graph(const GraphDefinition &graphDefinition,
       const auto &create = iter->second;
       if (create != nullptr) {
         nodes_.emplace_back(create(nodeDefinition, connector_));
-        Log().Info() << "Created node '" << nodeDefinition.name << "' of type '"
+        LOG_INFO << "Created node '" << nodeDefinition.name << "' of type '"
                      << nodeDefinition.type << "'.";
       } else {
-        Log().ErrorThrow() << "Unable to create node of type '"
+        THROW_ERROR << "Unable to create node of type '"
                            << nodeDefinition.type
                            << "'. The creation function is NULL.";
       }
     } else {
-      Log().ErrorThrow()
+      THROW_ERROR
           << "Unable to create node of type '" << nodeDefinition.type
           << "'. This node type can not be found in the registry.";
     }
@@ -65,18 +65,19 @@ void Graph::checkIfConnectionIsValid(const ConnectionDefinition &connection) {
 
     if (nodeName == connection.dst.nodeName) {
       dstExists = true;
-    } else if (nodeName == connection.src.nodeName) {
+    } 
+    if (nodeName == connection.src.nodeName) {
       srcExists = true;
     }
   }
 
   if (srcExists == false) {
-    Log().ErrorThrow() << "Error when adding connection. The source node '"
+    THROW_ERROR << "Error when adding connection. The source node '"
                        << connection.src.nodeName << "' does not exist.";
   }
 
   if (dstExists == false) {
-    Log().ErrorThrow() << "Error when adding connection. The destination node '"
+    THROW_ERROR << "Error when adding connection. The destination node '"
                        << connection.dst.nodeName << "' does not exist.";
   }
 }
@@ -89,9 +90,9 @@ void Graph::addConnection(ConnectionDefinition connection, bool reorderNodes) {
 
     connections_.insert(connection);
     connector_->connect(connection.src, connection.dst);
-    Log().Debug() << "Added connection " << toString(connection);
+    LOG_DEBUG << "Added connection " << toString(connection);
   } else {
-    Log().Warning() << "Attempted to add a connection that does already exist.";
+    LOG_WARNING << "Attempted to add a connection that does already exist.";
   }
   if (reorderNodes) {
     sortNodes();
@@ -104,12 +105,12 @@ void Graph::removeConnection(ConnectionDefinition connection,
   auto iter = connections_.find(connection);
 
   if (iter == connections_.end()) {
-    Log().Warning() << "Attempted to remove a connection that does not exist.";
+    LOG_WARNING << "Attempted to remove a connection that does not exist.";
   } else {
     connections_.erase(iter);
   }
   connector_->disconnect(connection.src, connection.dst);
-  Log().Debug() << "Removed connection " << toString(connection);
+  LOG_DEBUG << "Removed connection " << toString(connection);
 
   if (reorderNodes) {
     sortNodes();
@@ -118,23 +119,23 @@ void Graph::removeConnection(ConnectionDefinition connection,
 
 void Graph::execute() {
   for (const auto &node : nodes_) {
-    Log().Debug() << "Executing node '" << node->getName() << "'...";
+    LOG_DEBUG << "Executing node '" << node->getName() << "'...";
     node->execute();
   }
 }
 
 void Graph::sortNodes() {
 
-  Log().Debug() << "Sorting nodes...";
+  LOG_DEBUG << "Sorting nodes...";
 
   std::vector<ConnectionDefinition> connectionVector(connections_.begin(),
                                                      connections_.end());
   std::vector<std::string> sortedNodeNames =
       getNodeExecutionOrder(connectionVector);
 
-  Log().Debug() << "Order before sorting:";
+  LOG_DEBUG << "Order before sorting:";
   for (const auto &node : nodes_) {
-    Log().Debug() << node->getName();
+    LOG_DEBUG << node->getName();
   }
 
   std::sort(std::begin(nodes_), std::end(nodes_),
@@ -144,9 +145,9 @@ void Graph::sortNodes() {
               return aIdx < bIdx;
             });
 
-  Log().Debug() << "Order after sorting:";
+  LOG_DEBUG << "Order after sorting:";
   for (const auto &node : nodes_) {
-    Log().Debug() << node->getName();
+    LOG_DEBUG << node->getName();
   }
 }
 
