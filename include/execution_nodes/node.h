@@ -30,7 +30,7 @@ protected:
       obj = std::any_cast<T>(anyObj);
     } catch (const std::bad_any_cast &bac) {
 
-      Log().ErrorThrow() << "Error in node '" << name_ << "' of type '" << type_
+      THROW_ERROR << "Error in node '" << name_ << "' of type '" << type_
                          << "' when getting object from input on port '"
                          << portName
                          << "'. This error might come from a wrong typename in "
@@ -39,7 +39,7 @@ protected:
 
     } catch (const std::exception &ex) {
 
-      Log().ErrorThrow() << "Error in node '" << name_ << "' of type '" << type_
+      THROW_ERROR << "Error in node '" << name_ << "' of type '" << type_
                          << "' when getting object from input on port '"
                          << portName
                          << "'. Additional information: " << ex.what();
