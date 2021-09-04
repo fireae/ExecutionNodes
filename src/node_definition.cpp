@@ -10,7 +10,7 @@ void from_json(const nlohmann::json &j, NodeDefinition &d) {
     j.at("type").get_to(d.type);
 
   } catch (const std::exception &ex) {
-    Log().ErrorThrow()
+    THROW_ERROR
         << "Unable to parse name or type of node definition from json: "
         << ex.what();
   }

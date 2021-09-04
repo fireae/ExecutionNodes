@@ -56,7 +56,7 @@ void visit(const std::string &nodeName, const AdjacencyMap &adjMap,
     return;
   }
   if (hasMark(nodeName, temporaryMarks)) {
-    Log().ErrorThrow()
+    THROW_ERROR
         << "The nodes in this graph contain at least one circular dependency. "
            "Please make sure the graph is acyclic.";
   }
