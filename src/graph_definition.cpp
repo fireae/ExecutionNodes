@@ -22,7 +22,7 @@ Port portIdToPort(const std::string &str) {
   Port retval;
   auto tokens = split(str, ':');
   if (tokens.size() != 2) {
-    Log().ErrorThrow() << "The string '" << str
+    THROW_ERROR << "The string '" << str
                        << "' is no valid port definition. Please use for "
                           "example: 'nodeName:portName'";
   }
@@ -38,12 +38,12 @@ void from_json(const nlohmann::json &j, GraphDefinition &d) {
     j.at("name").get_to(d.name);
 
   } catch (const std::exception &ex) {
-    Log().ErrorThrow() << "Unable to parse name of graph definition from json: "
+    THROW_ERROR << "Unable to parse name of graph definition from json: "
                        << ex.what();
   }
 
   if (j.find("nodes") == j.end()) {
-    Log().ErrorThrow() << "Unable to find nodes list in graph definition";
+    THROW_ERROR << "Unable to find nodes list in graph definition";
   }
 
   for (const auto &item : j.at("nodes").items()) {
@@ -55,7 +55,7 @@ void from_json(const nlohmann::json &j, GraphDefinition &d) {
   }
 
   if (j.find("connections") == j.end()) {
-    Log().ErrorThrow() << "Unable to find connections list in graph definition";
+    THROW_ERROR << "Unable to find connections list in graph definition";
   }
 
   std::vector<std::pair<std::string /*src*/, std::string /*dst*/>>
@@ -83,12 +83,12 @@ std::string readFileToString(const std::string &filePath) {
   try {
     file.open(filePath);
   } catch (const std::exception &ex) {
-    Log().ErrorThrow() << "Error when opening file from path '" << filePath
+    THROW_ERROR << "Error when opening file from path '" << filePath
                        << "': " << ex.what();
   }
 
   if (!file.is_open()) {
-    Log().ErrorThrow() << "Error when opening file from path '" << filePath
+    THROW_ERROR << "Error when opening file from path '" << filePath
                        << "'";
   }
   std::string retval;
@@ -98,7 +98,7 @@ std::string readFileToString(const std::string &filePath) {
     ss << file.rdbuf();
     retval = ss.str();
   } catch (const std::exception &ex) {
-    Log().ErrorThrow() << "Error when reading file from path '" << filePath
+    THROW_ERROR << "Error when reading file from path '" << filePath
                        << "': " << ex.what();
   }
 
@@ -114,7 +114,7 @@ GraphDefinition loadGraphDefFromJson(const std::string &jsonFilePath) {
     j = nlohmann::json::parse(content);
     retval = loadGraphDefFromJson(j);
   } catch (const std::exception &ex) {
-    Log().ErrorThrow() << "Error when parsing content from file '"
+    THROW_ERROR << "Error when parsing content from file '"
                        << jsonFilePath << "'to json: " << ex.what();
   }
   return retval;
