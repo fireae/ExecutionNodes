@@ -4,5 +4,5 @@
 using namespace execution_nodes;
 
 TEST_CASE("Construct Graph", "Test") {
-	Graph graph();
+	//Graph graph;
 }
