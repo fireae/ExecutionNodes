@@ -3,11 +3,6 @@
 
 namespace execution_nodes {
 
-static const std::hash<std::string> stringHasher;
-
-ConnectionId hash(const std::string &str) {
-  return static_cast<ConnectionId>(stringHasher(str));
-}
 
 PortId createPortId(const Port &port) {
   return port.nodeName + ":" + port.portName;
@@ -26,14 +21,12 @@ bool ConnectionDefinition::operator<(const ConnectionDefinition &rhs) const {
   auto rSrc = createPortId(rhs.src);
   auto rDst = createPortId(rhs.dst);
   auto rCnn = createConnectionName(rSrc, rDst);
-  auto rId = hash(rCnn);
 
   auto lSrc = createPortId(src);
   auto lDst = createPortId(dst);
   auto lCnn = createConnectionName(lSrc, lDst);
-  auto lId = hash(lCnn);
 
-  return lId < rId;
+  return lCnn < rCnn;
 }
 
 } // namespace execution_nodes

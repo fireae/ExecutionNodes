@@ -61,7 +61,7 @@ void Connector::registerOutput(const std::string &nodeName,
 
   auto portId = createPortId(nodeName, portName);
   if (connectionMap_.find(portId) == connectionMap_.end()) {
-    connectionMap_[portId] = hash(portId);
+    connectionMap_[portId] = portId;
   }
 }
 
@@ -70,11 +70,10 @@ void Connector::registerAndConnectInput(const std::string &nodeName,
                                         const std::string &connection) {
 
   auto portId = createPortId(nodeName, portName);
-  auto connectionId = hash(connection);
 
   auto iter = connectionMap_.find(portId);
   if (iter == connectionMap_.end()) {
-    connectionMap_[portId] = connectionId;
+    connectionMap_[portId] = connection;
   } else {
 
     THROW_ERROR << "Error when connecting input port '" << portId

@@ -6,10 +6,9 @@ namespace execution_nodes {
 
 typedef std::string PortId;
 typedef std::string ConnectionName;
+typedef std::string ConnectionId;
 
-typedef size_t ConnectionId;
-
-static constexpr ConnectionId no_connection{static_cast<ConnectionId>(0)};
+static const std::string no_connection{""};
 
 struct Port {
   std::string nodeName;
@@ -19,12 +18,9 @@ struct Port {
       : nodeName(nodeName_), portName(portName_) {}
 };
 
-ConnectionId hash(const std::string &str);
-
 PortId createPortId(const Port &port);
 
-PortId createPortId(const std::string &nodeName,
-                               const std::string &portName);
+PortId createPortId(const std::string &nodeName, const std::string &portName);
 
 ConnectionName createConnectionName(const PortId &out, const PortId &in);
 
