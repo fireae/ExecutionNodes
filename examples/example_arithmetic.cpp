@@ -103,16 +103,6 @@ int main() {
       REGISTER(NumberPrinter),
   };
 
-  std::vector<std::pair<std::string, std::string>> vps;
-
-  vps.emplace_back(std::pair<std::string, std::string>("a:a", "b:b"));
-
-  nlohmann::json j;
-
-  j = vps;
-
-  std::cout << j.dump(2);
-
   std::string filePath =
       "C:/Users/Sebastian/source/repos/ExecutionNodes/examples/concept_2.json";
 
