@@ -32,7 +32,7 @@ private:
   std::map<PortId, ConnectionId> connectionMap_;
   std::map<PortId, PortType> portTypeMap_;
 
-  void Connector::registerOutput(const std::string &nodeName,
+  void registerOutput(const std::string &nodeName,
                                  const std::string &portName);
 
   void registerAndConnectInput(const std::string &nodeName,
