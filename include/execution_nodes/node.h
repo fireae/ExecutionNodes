@@ -31,24 +31,24 @@ protected:
     } catch (const std::bad_any_cast &bac) {
 
       THROW_ERROR << "Error in node '" << name_ << "' of type '" << type_
-                         << "' when getting object from input on port '"
-                         << portName
-                         << "'. This error might come from a wrong typename in "
-                            "the template argument. Additional information: "
-                         << bac.what();
+                  << "' when getting object from input on port '" << portName
+                  << "'. This error might come from a wrong typename in "
+                     "the template argument. Additional information: "
+                  << bac.what();
 
     } catch (const std::exception &ex) {
 
       THROW_ERROR << "Error in node '" << name_ << "' of type '" << type_
-                         << "' when getting object from input on port '"
-                         << portName
-                         << "'. Additional information: " << ex.what();
+                  << "' when getting object from input on port '" << portName
+                  << "'. Additional information: " << ex.what();
     }
   }
-
   template <class T> T getSetting(const std::string &key) {
     return settings_[key].get<T>();
   }
+  std::set<std::string> getInputPortNames();
+  std::set<std::string> getOutputPortNames();
+  std::set<std::string> getPortNames(PortType type);
 
 private:
   std::string name_;
@@ -61,11 +61,9 @@ typedef std::unique_ptr<Node> NodePtr;
 
 template <class DerivedNodeType>
 NodePtr createNode(const NodeDefinition &nodeDefinition,
-                                 const std::shared_ptr<Connector> &connector) {
+                   const std::shared_ptr<Connector> &connector) {
   return std::make_unique<DerivedNodeType>(
       DerivedNodeType(nodeDefinition, connector));
 }
-
-
 
 } // namespace execution_nodes
