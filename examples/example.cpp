@@ -22,7 +22,7 @@ public:
   void execute() override {
 
     int number = distr_(randomEngine_);
-    setOutput("number", number);
+    setOutput("number", static_cast<float>(number));
     std::cout << "rng says: " << number << std::endl;
   }
 
@@ -39,17 +39,44 @@ public:
 
   void execute() override {
 
-    int a = 0, b = 0;
+    float a = 0, b = 0;
     getInput("a", a);
     getInput("b", b);
 
-    std::cout << "a: " << a << std::endl;
-    std::cout << "b: " << b << std::endl;
-
-    int sum = a + b;
+    float sum = a + b;
+    std::cout << a << "+" << b << " = " << sum << std::endl;
 
     setOutput("sum", sum);
-    std::cout << "sum: " << sum << std::endl;
+  }
+};
+
+class Squarer : public execution_nodes::Node {
+
+public:
+  Squarer(const NodeDefinition &definition, const ConnectorPtr &connector)
+      : execution_nodes::Node(definition, connector) {}
+
+  void execute() override {
+
+    float x = 0;
+    getInput("x", x);
+    setOutput("x2", x*x);
+  }
+};
+
+class Divider : public execution_nodes::Node {
+
+public:
+  Divider(const NodeDefinition &definition, const ConnectorPtr &connector)
+      : execution_nodes::Node(definition, connector) {}
+
+  void execute() override {
+
+    float a = 0;
+    float b = 0;
+    getInput("a", a);
+    getInput("b", b);
+    setOutput("quotient", a / b);
   }
 };
 
@@ -60,7 +87,7 @@ public:
       : execution_nodes::Node(definition, connector) {}
 
   void execute() override {
-    int number = 0;
+    float number = 0;
     getInput("number", number);
     std::cout << "The number is: " << number << std::endl;
   }
@@ -70,7 +97,9 @@ int main() {
 
   NodeRegistry registry = {
       REGISTER(Adder),
+      REGISTER(Squarer),
       REGISTER(RandomNumberGenerator),
+      REGISTER(Divider),
       REGISTER(NumberPrinter),
   };
 
@@ -91,8 +120,9 @@ int main() {
 
   Graph graph(graphDef, registry);
 
-  graph.execute();
-
+  //while (true) {
+    graph.execute();
+  //};
 
   /*
   ConnectorPtr connector = std::make_shared<Connector>();
