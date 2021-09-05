@@ -12,6 +12,7 @@ size_t getIndexOfElement(const std::string &element,
   }
   THROW_ERROR << "Error when sorting nodes. Unable to find node '"
                      << element << "' in the list of connections";
+  return list.size() + 1;
 }
 
 Graph::Graph(const GraphDefinition &graphDefinition,
