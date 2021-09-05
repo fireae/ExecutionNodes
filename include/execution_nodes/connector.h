@@ -2,6 +2,7 @@
 
 #include <any>
 #include <map>
+#include <set>
 
 #include <execution_nodes/connection.h>
 #include <memory>
@@ -25,15 +26,21 @@ public:
   bool hasObject(const PortId &portId);
   void getObject(const PortId &portId, std::any &obj);
 
+  std::set<std::string> getConnectedPorts(const std::string &nodeName,
+                                             PortType type);
+
 private:
   ConnectionId getConnectionByPortId(const PortId &portId);
 
   std::map<ConnectionId, std::any> objectsMap_;
   std::map<PortId, ConnectionId> connectionMap_;
   std::map<PortId, PortType> portTypeMap_;
+  std::map<std::string /*node name*/, std::set<std::string /*port name*/>>
+      inputPortsPerNode_;
+  std::map<std::string /*node name*/, std::set<std::string /*port name*/>>
+      outputPortsPerNode_;
 
-  void registerOutput(const std::string &nodeName,
-                                 const std::string &portName);
+  void registerOutput(const std::string &nodeName, const std::string &portName);
 
   void registerAndConnectInput(const std::string &nodeName,
                                const std::string &portName,
