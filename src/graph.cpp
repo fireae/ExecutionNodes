@@ -4,14 +4,16 @@
 namespace execution_nodes {
 
 size_t getIndexOfElement(const std::string &element,
-                         const std::vector<std::string> &list) {
+                         const std::vector<std::string> &list, bool doThrow) {
   for (size_t i = 0; i < list.size(); i++) {
     if (list[i] == element) {
       return i;
     }
   }
-  THROW_ERROR << "Error when sorting nodes. Unable to find node '"
-                     << element << "' in the list of connections";
+  if (doThrow) {
+    THROW_ERROR << "Error when sorting nodes. Unable to find node '" << element
+                << "' in the list of connections";
+  }
   return list.size() + 1;
 }
 
@@ -31,16 +33,14 @@ Graph::Graph(const GraphDefinition &graphDefinition,
       if (create != nullptr) {
         nodes_.emplace_back(create(nodeDefinition, connector_));
         LOG_INFO << "Created node '" << nodeDefinition.name << "' of type '"
-                     << nodeDefinition.type << "'.";
+                 << nodeDefinition.type << "'.";
       } else {
-        THROW_ERROR << "Unable to create node of type '"
-                           << nodeDefinition.type
-                           << "'. The creation function is NULL.";
+        THROW_ERROR << "Unable to create node of type '" << nodeDefinition.type
+                    << "'. The creation function is NULL.";
       }
     } else {
-      THROW_ERROR
-          << "Unable to create node of type '" << nodeDefinition.type
-          << "'. This node type can not be found in the registry.";
+      THROW_ERROR << "Unable to create node of type '" << nodeDefinition.type
+                  << "'. This node type can not be found in the registry.";
     }
   }
 
@@ -66,7 +66,7 @@ void Graph::checkIfConnectionIsValid(const ConnectionDefinition &connection) {
 
     if (nodeName == connection.dst.nodeName) {
       dstExists = true;
-    } 
+    }
     if (nodeName == connection.src.nodeName) {
       srcExists = true;
     }
@@ -74,12 +74,12 @@ void Graph::checkIfConnectionIsValid(const ConnectionDefinition &connection) {
 
   if (srcExists == false) {
     THROW_ERROR << "Error when adding connection. The source node '"
-                       << connection.src.nodeName << "' does not exist.";
+                << connection.src.nodeName << "' does not exist.";
   }
 
   if (dstExists == false) {
     THROW_ERROR << "Error when adding connection. The destination node '"
-                       << connection.dst.nodeName << "' does not exist.";
+                << connection.dst.nodeName << "' does not exist.";
   }
 }
 
@@ -120,8 +120,16 @@ void Graph::removeConnection(ConnectionDefinition connection,
 
 void Graph::execute() {
   for (const auto &node : nodes_) {
-    LOG_DEBUG << "Executing node '" << node->getName() << "'...";
-    node->execute();
+    std::string nodeName = node->getName();
+    std::string nodeType = node->getType();
+    LOG_DEBUG << "Executing node '" << nodeName << "'...";
+    try {
+
+      node->execute();
+    } catch (const std::exception &ex) {
+      THROW_ERROR << "Error when executing node '" << nodeName << "' of type '"
+                  << nodeType << "'. Addition info: " << ex.what();
+    }
   }
 }
 
@@ -135,21 +143,43 @@ void Graph::sortNodes() {
       getNodeExecutionOrder(connectionVector);
 
   LOG_DEBUG << "Order before sorting:";
-  for (const auto &node : nodes_) {
-    LOG_DEBUG << node->getName();
+
+  auto it = nodes_.begin();
+  while (it != nodes_.end()) {
+    const auto &node = *it;
+    const auto &nodeName = node->getName();
+
+    size_t index = getIndexOfElement(node->getName(), sortedNodeNames, false);
+
+    if (index > sortedNodeNames.size()) {
+      // remove this node
+      it = nodes_.erase(it);
+      LOG_DEBUG << "Node '" << nodeName << "' has no connections and will be removed";
+
+    } else {
+      ++it;
+      LOG_DEBUG << "Node '" << nodeName << "' will remain";
+    }
   }
 
   std::sort(std::begin(nodes_), std::end(nodes_),
             [&sortedNodeNames](const NodePtr &a, const NodePtr &b) {
-              size_t aIdx = getIndexOfElement(a->getName(), sortedNodeNames);
-              size_t bIdx = getIndexOfElement(b->getName(), sortedNodeNames);
+              size_t aIdx = getIndexOfElement(a->getName(), sortedNodeNames, true);
+              size_t bIdx = getIndexOfElement(b->getName(), sortedNodeNames, true);
               return aIdx < bIdx;
             });
 
-  LOG_DEBUG << "Order after sorting:";
+  LOG_DEBUG << "Order or execution after sorting:";
+
+  std::string nodeNameList = "";
+
   for (const auto &node : nodes_) {
-    LOG_DEBUG << node->getName();
+      if(nodeNameList != "") {
+        nodeNameList += " -> ";
+      }
+    nodeNameList += node->getName();
   }
+  LOG_DEBUG << nodeNameList;
 }
 
 } // namespace execution_nodes
