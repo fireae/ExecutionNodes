@@ -29,7 +29,7 @@ else()
   add_subdirectory(${json_SOURCE_DIR} ${json_BINARY_DIR} EXCLUDE_FROM_ALL)
 
   endif()
-  endif()
+endif()
 target_link_libraries(lib_execution_nodes PUBLIC nlohmann_json::nlohmann_json)
 
 
