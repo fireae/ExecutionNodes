@@ -221,6 +221,7 @@ std::set<std::string> Connector::getConnectedPorts(const std::string &nodeName,
   } else {
     LOG_ERROR << "Unknown port type.";
   }
+  return retval;
 }
 
 /*
