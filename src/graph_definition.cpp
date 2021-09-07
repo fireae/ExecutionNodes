@@ -88,7 +88,7 @@ std::string readFileToString(const std::string &filePath) {
   }
 
   if (!file.is_open()) {
-    THROW_ERROR << "Error when opening file from path '" << filePath
+    THROW_ERROR << "Unable to open file from path '" << filePath
                        << "'";
   }
   std::string retval;
