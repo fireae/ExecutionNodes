@@ -44,7 +44,19 @@ protected:
     }
   }
   template <class T> T getSetting(const std::string &key) {
-    return settings_[key].get<T>();
+
+    if (settings_.find(key) == settings_.end()) {
+      THROW_ERROR << "Error when getting setting for node '" << name_
+                  << "' of type '" << type_
+                  << "'. There is no setting with key '" << key << "'.";
+    }
+    try {
+      return settings_[key].get<T>();
+    } catch (const std::exception &ex) {
+      THROW_ERROR << "Error when getting setting for node '" << name_
+                  << "' of type '" << type_ << "': " << ex.what();
+    }
+    return T();
   }
   std::set<std::string> getInputPortNames();
   std::set<std::string> getOutputPortNames();
