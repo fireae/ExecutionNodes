@@ -1,0 +1,38 @@
+{
+    "name": "Image Processing Example",
+    "nodes": {
+        "load_image": {
+            "type": "LoadImageNode",
+            "settings": {
+                "imageFilePath": "C:/Temp/test.bmp"
+            }
+        },
+        "binary": {
+            "type": "BinarizeImageNode",
+            "settings": {
+                "threshold": 100
+            }
+        },
+        "blur": {
+            "type": "GaussianBlurNode",
+            "settings": {
+                "sigma": 2.3
+            }
+        },
+        "display": {
+            "type": "DisplayImageNode",
+            "settings": {
+                "windowName": "Picard"
+            }
+        }
+    },
+    "connections": [
+        [ "load_image:image" , "binary:image" ],
+        [ "binary:binary" , "blur:image" ],
+        [ "blur:blurred" , "display:image" ]
+    ]
+}
+
+
+
+
