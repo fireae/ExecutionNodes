@@ -33,6 +33,7 @@ endif()
 include(FetchContent)
 
 option(USE_EXTERNAL_NLOHMANN_JSON "Use an externally provided nlohmann JSON library" OFF)
+option(WITH_EXAMPLES "Build example projects showing usage of the library" OFF)
 
 
 # FetchContent_MakeAvailable was not added until CMake 3.14; use our shim
