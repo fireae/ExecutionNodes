@@ -23,7 +23,8 @@ std::string time_in_HH_MM_SS_MMM() {
   auto timer = sc::system_clock::to_time_t(now);
 
   // convert to broken time
-  std::tm bt = *std::localtime(&timer);
+  std::tm bt;
+  localtime_s(&bt, &timer);
 
   std::ostringstream oss;
 
@@ -83,7 +84,7 @@ std::ostringstream &Log::Debug(const std::string &functionName) {
   return InternalLog(LogLevel::LVL_DEBUG, functionName, false);
 }
 
-Log::~Log() {
+Log::~Log() noexcept(false) {
   if (messageLevel >= Log::getLogLevel()) {
     os << std::endl;
     std::string msg = os.str();

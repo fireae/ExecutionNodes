@@ -28,7 +28,8 @@ enum class LogLevel : uint8_t {
 class Log {
 public:
   Log();
-  virtual ~Log();
+  
+  virtual ~Log() noexcept(false);
   std::ostringstream &ErrorThrow(const std::string &functionName = "");
   std::ostringstream &Error(const std::string &functionName = "",
                             bool throwException = false);
