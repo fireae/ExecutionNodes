@@ -1,14 +1,13 @@
 // log.cpp
+#include <chrono>
 #include <execution_nodes/logging.hpp>
 #include <iostream>
 #include <map>
-#include <chrono>
 
 namespace execution_nodes {
 
 LogLevel Log::logginglevel = LogLevel::LVL_ERROR;
 Log::Log() : doThrow(false) {}
-
 
 std::string time_in_HH_MM_SS_MMM() {
   namespace sc = std::chrono;
@@ -36,14 +35,6 @@ std::string time_in_HH_MM_SS_MMM() {
 
 std::string getTimestamp() {
   return time_in_HH_MM_SS_MMM();
-  //auto t = std::time(nullptr);
-  //auto tm = *std::localtime(&t);
-
-  //std::ostringstream oss;
-  //oss.clear();
-  //oss << std::put_time(&tm, "%H:%M:%S");
-  //auto str = oss.str();
-  //return str;
 }
 
 static const std::map<uint8_t, std::string> levelToString = {
@@ -97,7 +88,12 @@ Log::~Log() {
     os << std::endl;
     std::string msg = os.str();
 
-    std::cout << msg;
+    if (messageLevel > LogLevel::LVL_ERROR) {
+      std::cerr << msg;
+    } else {
+
+      std::cout << msg;
+    }
 
     if (doThrow) {
       throw std::runtime_error(msg);
