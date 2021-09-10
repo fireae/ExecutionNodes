@@ -15,16 +15,18 @@ Connector::Connector(){
 
 void Connector::connect(const Port &out, const Port &in) {
 
+  // In order to connect two ports we need to create a unique port id for both.
   auto outPortId = createPortId(out);
   auto inPortId = createPortId(in);
 
+  // In case they have the same id we would be connecting the port to itself.
+  // This is forbidden, hence runtime error is thrown.
   if (outPortId == inPortId) {
     LOG_ERROR
         << "Error when connecting ports: The port " << outPortId
         << " connects to itself. This is not allowed and will be ignored.";
     return;
   }
-
   auto iterOut = portTypeMap_.find(outPortId);
   if (iterOut == portTypeMap_.end()) {
     portTypeMap_[outPortId] = PortType::OUTPUT;
@@ -118,10 +120,7 @@ void Connector::removeConnection(const std::string &nodeName,
 ConnectionId Connector::getConnectionByPortId(const PortId &portId) {
   ConnectionId retval = no_connection;
   auto iter = connectionMap_.find(portId);
-  if (iter == connectionMap_.end()) {
-    THROW_ERROR << "Error when getting connection for port id '" << portId
-                << "'. This port has no connection.";
-  } else {
+  if (iter != connectionMap_.end()) {
     retval = iter->second;
   }
   return retval;
