@@ -1,7 +1,7 @@
 
 #include <execution_nodes/connection.h>
-#include <sstream>
 #include <vector>
+#include <execution_nodes/helpers.h>
 
 #include <execution_nodes/logging.hpp>
 
@@ -19,15 +19,6 @@ ConnectionName createConnectionName(const PortId &out, const PortId &in) {
   return out + "->" + in;
 }
 
-std::vector<std::string> split(const std::string &str, char delimiter) {
-  std::string line;
-  std::vector<std::string> tokens;
-  std::stringstream ss(str);
-  while (std::getline(ss, line, delimiter)) {
-    tokens.push_back(line);
-  }
-  return tokens;
-}
 
 ConnectionDefinition::ConnectionDefinition(const std::string &srcId,
                                            const std::string &dstId) {

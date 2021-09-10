@@ -1,8 +1,6 @@
 #include <execution_nodes/connector.h>
 #include <execution_nodes/logging.hpp>
 
-#include <string>
-
 #include <functional>
 
 namespace execution_nodes {
