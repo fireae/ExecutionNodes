@@ -1,4 +1,3 @@
-#pragma once
 #include <execution_nodes/logging.hpp>
 #include <execution_nodes/node.h>
 

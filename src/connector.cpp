@@ -1,5 +1,3 @@
-#pragma once
-
 #include <execution_nodes/connector.h>
 #include <execution_nodes/logging.hpp>
 

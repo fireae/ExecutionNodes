@@ -3,7 +3,7 @@
 
 using namespace execution_nodes;
 
-static std::string lastExecutedNodeName = "";
+static std::vector<std::string> executionTrack = {};
 
 class TestSource : public Node {
 public:
@@ -11,7 +11,7 @@ public:
       : Node(d, c), seed(getSetting<int>("seed")) {}
 
   void execute() {
-    lastExecutedNodeName = getName();
+    executionTrack.emplace_back(getName());
     setOutput("out", seed);
   }
 
@@ -25,7 +25,7 @@ public:
       : Node(d, c), expected(getSetting<int>("expected")) {}
 
   void execute() {
-    lastExecutedNodeName = getName();
+    executionTrack.emplace_back(getName());
     int in;
     getInput("in", in);
     REQUIRE(in == expected);
@@ -40,7 +40,7 @@ public:
   DummyNode(NodeDefinition d, ConnectorPtr c) : Node(d, c) {}
 
   void execute() {
-    lastExecutedNodeName = getName();
+    executionTrack.emplace_back(getName());
     int in;
     getInput("in", in);
     int out = in;
@@ -74,7 +74,7 @@ std::shared_ptr<Graph> constructABC(int seed) {
   auto cd = ConnectionDefinition(Port("B", "out"), Port("C", "in"));
   gd.connections.emplace_back(cd);
 
-  lastExecutedNodeName = "";
+  executionTrack = {};
 
   return std::make_shared<Graph>(Graph(gd, registry));
 }
@@ -87,13 +87,16 @@ TEST_CASE("Graph hasNode()", "Test") {
   REQUIRE(graph->hasNode("B") == true);
   REQUIRE(graph->hasNode("C") == true);
   REQUIRE(graph->hasNode("does not exist") == false);
-  REQUIRE(lastExecutedNodeName == "");
+  REQUIRE(executionTrack.size() == 0); // no node was executed
 }
 
 TEST_CASE("Execute Simple Graph", "Test") {
   auto graph = constructABC(42);
   graph->execute();
-  REQUIRE(lastExecutedNodeName == "C");
+  REQUIRE(executionTrack.size() == 3); // exactly the nodes where executed
+  REQUIRE(executionTrack[0] == "A");   // first node was A
+  REQUIRE(executionTrack[1] == "B");   // then B
+  REQUIRE(executionTrack[2] == "C");   // then C
 }
 
 TEST_CASE("Remove Connection from Graph", "Test") {
@@ -102,7 +105,9 @@ TEST_CASE("Remove Connection from Graph", "Test") {
       ConnectionDefinition(Port("B", "out"), Port("C", "in")));
   REQUIRE(graph->hasNode("C") == false);
   graph->execute();
-  REQUIRE(lastExecutedNodeName == "B");
+  REQUIRE(executionTrack.size() == 2);
+  REQUIRE(executionTrack[0] == "A");
+  REQUIRE(executionTrack[1] == "B");
 }
 
 TEST_CASE("Add Node to Graph", "Test") {
@@ -116,7 +121,10 @@ TEST_CASE("Add Node to Graph", "Test") {
                  {ConnectionDefinition("B:out", "C:in")});
   REQUIRE(graph->hasNode("C") == true);
   graph->execute();
-  REQUIRE(lastExecutedNodeName == "C");
+  REQUIRE(executionTrack.size() == 3);
+  REQUIRE(executionTrack[0] == "A");
+  REQUIRE(executionTrack[1] == "B");
+  REQUIRE(executionTrack[2] == "C");
 }
 
 TEST_CASE("Remove Nodes from Graph", "Test") {
@@ -130,18 +138,21 @@ TEST_CASE("Remove Nodes from Graph", "Test") {
   REQUIRE(graph->hasNode("B") == false);
   REQUIRE(graph->hasNode("C") == false);
   graph->execute();
-  REQUIRE(lastExecutedNodeName == "A");
+  REQUIRE(executionTrack.size() == 1);
+  REQUIRE(executionTrack[0] == "A");
 }
 
 TEST_CASE("Add Connection to Graph", "Test") {
 
-    auto graph = constructABC(42);
-    graph->removeNode("B");
-    REQUIRE(graph->hasNode("A") == true);
-    REQUIRE(graph->hasNode("B") == false);
-    REQUIRE(graph->hasNode("C") == true);
-    graph->addConnection(ConnectionDefinition("A:out", "C:in"));
-    graph->execute();
-    REQUIRE(lastExecutedNodeName == "C");
+  auto graph = constructABC(42);
+  graph->removeNode("B");
+  REQUIRE(graph->hasNode("A") == true);
+  REQUIRE(graph->hasNode("B") == false);
+  REQUIRE(graph->hasNode("C") == true);
+  graph->addConnection(ConnectionDefinition("A:out", "C:in"));
+  graph->execute();
+  REQUIRE(executionTrack.size() == 2);
+  REQUIRE(executionTrack[0] == "A");
+  REQUIRE(executionTrack[1] == "C");
 
 }
