@@ -3,6 +3,145 @@
 
 using namespace execution_nodes;
 
-TEST_CASE("Construct Graph", "Test") {
-	//Graph graph;
+static std::string lastExecutedNodeName = "";
+
+class TestSource : public Node {
+public:
+  TestSource(NodeDefinition d, ConnectorPtr c)
+      : Node(d, c), seed(getSetting<int>("seed")) {}
+
+  void execute() {
+    lastExecutedNodeName = getName();
+    setOutput("out", seed);
+  }
+
+private:
+  int seed;
+};
+
+class TestSink : public Node {
+public:
+  TestSink(NodeDefinition d, ConnectorPtr c)
+      : Node(d, c), expected(getSetting<int>("expected")) {}
+
+  void execute() {
+    lastExecutedNodeName = getName();
+    int in;
+    getInput("in", in);
+    REQUIRE(in == expected);
+  }
+
+private:
+  int expected;
+};
+
+class DummyNode : public Node {
+public:
+  DummyNode(NodeDefinition d, ConnectorPtr c) : Node(d, c) {}
+
+  void execute() {
+    lastExecutedNodeName = getName();
+    int in;
+    getInput("in", in);
+    int out = in;
+    setOutput("out", out);
+  }
+};
+
+static const NodeRegistry registry = {
+    REGISTER(TestSource),
+    REGISTER(DummyNode),
+    REGISTER(TestSink),
+};
+
+std::shared_ptr<Graph> constructABC(int seed) {
+
+  nlohmann::json sourceSettings;
+  sourceSettings["seed"] = seed;
+
+  nlohmann::json sinkSettings;
+  sinkSettings["expected"] = seed;
+
+  GraphDefinition gd;
+  gd.name = "test";
+
+  auto A = NodeDefinition("A", "TestSource", sourceSettings);
+  gd.nodes.emplace_back("C", "TestSink", sinkSettings);
+  gd.nodes.emplace_back("B", "DummyNode");
+  gd.nodes.emplace_back(A);
+
+  gd.connections.emplace_back(Port("A", "out"), Port("B", "in"));
+  auto cd = ConnectionDefinition(Port("B", "out"), Port("C", "in"));
+  gd.connections.emplace_back(cd);
+
+  lastExecutedNodeName = "";
+
+  return std::make_shared<Graph>(Graph(gd, registry));
+}
+
+TEST_CASE("Construct Simple Graph", "Test") { auto graph = constructABC(42); }
+
+TEST_CASE("Graph hasNode()", "Test") {
+  auto graph = constructABC(42);
+  REQUIRE(graph->hasNode("A") == true);
+  REQUIRE(graph->hasNode("B") == true);
+  REQUIRE(graph->hasNode("C") == true);
+  REQUIRE(graph->hasNode("does not exist") == false);
+  REQUIRE(lastExecutedNodeName == "");
+}
+
+TEST_CASE("Execute Simple Graph", "Test") {
+  auto graph = constructABC(42);
+  graph->execute();
+  REQUIRE(lastExecutedNodeName == "C");
+}
+
+TEST_CASE("Remove Connection from Graph", "Test") {
+  auto graph = constructABC(42);
+  graph->removeConnection(
+      ConnectionDefinition(Port("B", "out"), Port("C", "in")));
+  REQUIRE(graph->hasNode("C") == false);
+  graph->execute();
+  REQUIRE(lastExecutedNodeName == "B");
+}
+
+TEST_CASE("Add Node to Graph", "Test") {
+  auto graph = constructABC(42);
+  graph->removeConnection(
+      ConnectionDefinition(Port("B", "out"), Port("C", "in")));
+  REQUIRE(graph->hasNode("C") == false);
+  nlohmann::json setting;
+  setting["expected"] = 42;
+  graph->addNode(NodeDefinition("C", "TestSink", setting),
+                 {ConnectionDefinition("B:out", "C:in")});
+  REQUIRE(graph->hasNode("C") == true);
+  graph->execute();
+  REQUIRE(lastExecutedNodeName == "C");
+}
+
+TEST_CASE("Remove Nodes from Graph", "Test") {
+  auto graph = constructABC(42);
+  graph->removeNode("B");
+  REQUIRE(graph->hasNode("A") == true);
+  REQUIRE(graph->hasNode("B") == false);
+  REQUIRE(graph->hasNode("C") == true);
+  graph->removeNode("C");
+  REQUIRE(graph->hasNode("A") == true);
+  REQUIRE(graph->hasNode("B") == false);
+  REQUIRE(graph->hasNode("C") == false);
+  graph->execute();
+  REQUIRE(lastExecutedNodeName == "A");
+}
+
+TEST_CASE("Add Connection to Graph", "Test") {
+
+    auto graph = constructABC(42);
+    graph->removeNode("B");
+    REQUIRE(graph->hasNode("A") == true);
+    REQUIRE(graph->hasNode("B") == false);
+    REQUIRE(graph->hasNode("C") == true);
+    graph->addConnection(ConnectionDefinition("A:out", "C:in"));
+    graph->execute();
+    REQUIRE(lastExecutedNodeName == "C");
+
 }
