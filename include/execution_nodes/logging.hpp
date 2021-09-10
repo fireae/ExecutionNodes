@@ -64,8 +64,8 @@ private:
  */
 #define LOG_ERROR Log().Error(__func__)
 /**
- * @brief Write a log message on the error channel. Writes to std::cerr and
- * throws a std::runtime_error.
+ * @brief Write a log message on the error channel. Writes to std::cerr
+ * @throw std::runtime_error in any case.
  */
 #define THROW_ERROR Log().ErrorThrow(__func__)
 /**
