@@ -198,6 +198,40 @@ void Connector::getObject(const PortId &portId, std::any &obj) {
   }
 }
 
+void Connector::getObjectFromOutput(const PortId &portId, std::any &obj) {
+
+      auto iter = portTypeMap_.find(portId);
+  if (iter == portTypeMap_.end()) {
+
+    THROW_ERROR << "The port port '" << portId << "' is undefined.";
+
+  } else if (iter->second == PortType::OUTPUT) {
+
+    auto connection = getConnectionByPortId(portId);
+
+    if (connection != no_connection) {
+      auto iter = objectsMap_.find(connection);
+      if (iter != objectsMap_.end()) {
+        obj = iter->second;
+      } else {
+
+        THROW_ERROR << "Error when getting object for port id '" << portId
+                    << "'. Object does not exist.";
+      }
+    } else {
+
+      THROW_ERROR << "Error when getting object for port id '" << portId
+                  << "'. This port as no connection.";
+    }
+
+  } else {
+
+    THROW_ERROR << "Error when getting object from id '" << portId
+                << "'. This port is not an output port.";
+  }
+
+}
+
 std::set<std::string> Connector::getConnectedPorts(const std::string &nodeName,
                                                    PortType type) {
 

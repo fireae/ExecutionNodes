@@ -79,18 +79,58 @@ public:
   void removeConnection(ConnectionDefinition connection,
                         bool reorderNodes = true);
 
+  /**
+   * @brief Get object from an output port of a node within the graph. This is a
+   * way to extract object from the graph that would normally only be accessible
+   * from within a connected node.
+   *
+   * @tparam T The typename of the object.
+   * @param outputPort The output port from which to get the object.
+   * @param object The object that is returned.
+   */
+  template <class T> void getOutput(const Port &outputPort, T &object) {
+
+    auto portId = createPortId(outputPort);
+    std::any anyObj;
+    connector_->getObjectFromOutput(portId, anyObj);
+    try {
+      obj = std::any_cast<T>(anyObj);
+    } catch (const std::exception &ex) {
+
+      THROW_ERROR << "Error when getting object from port '" << portId
+                  << "'. Additional information: " << ex.what();
+    }
+  }
+
+  /**
+   * @brief Fakes an output from a node. By calling this function you can inject
+   * an object to all nodes which are connected to that output port. Say you
+   * have the connection A -> B. By using this method you can put put objects to
+   * node B without executing node A. However, If node A gets exeucted after you
+   * called this method the output set will be overwritten by whatever A
+   * produced.
+   *
+   * @tparam T The typename of the object to set. Can be any object.
+   * @param outputPort The output port whose output should be faked.
+   * @param object The object to be put.
+   */
+  template <class T> void fakeOutput(const Port &outputPort, const T &object) {
+    auto portId = createPortId(outputPort);
+    connector_->setObject(portId, object);
+  }
+
 private:
   Graph() = default;
   /**
    * @brief Create a And Add Node object.
-   * 
+   *
    * @param node The node to be created and added.
    */
   void createAndAddNode(const NodeDefinition &node);
 
   /**
    * @brief Removes all connection from and to the node.
-   * 
+   *
    * @param nodeName The node name.
    */
   void disconnectNode(const std::string &nodeName);

@@ -35,7 +35,7 @@ enum class PortType : uint8_t {
 class Connector {
 public:
   Connector();
-  //Connector(const Connector &) = delete;
+  // Connector(const Connector &) = delete;
 
   /**
    * @brief Connect an output port with an input port.
@@ -77,6 +77,17 @@ public:
    * @param obj The object to be retrieved. Can be any type.
    */
   void getObject(const PortId &portId, std::any &obj);
+
+  /**
+   * @brief Get the object from the specified output port. This function would
+   * never be called by any node. This is because any given node should not have
+   * any information about its connected output ports that feed into the input
+   * ports.
+   *
+   * @param portId The id of the port.
+   * @param obj The object to be retrieved. Can be any type.
+   */
+  void getObjectFromOutput(const PortId &portId, std::any &obj);
 
   /**
    * @brief Get a list of all connected ports of specified port type for a given
