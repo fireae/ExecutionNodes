@@ -2,13 +2,14 @@
 # show up in IDEs unless they are listed in add_library.
 
 # Optionally glob, but only for CMake 3.12 or later:
-file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${ExecutionNodes_SOURCE_DIR}/include/*/*.h*")
-#set(HEADER_LIST "${ModernCMakeExample_SOURCE_DIR}/include/modern/lib.hpp")
+file(GLOB PUBLIC_HEADER_LIST CONFIGURE_DEPENDS "${ExecutionNodes_SOURCE_DIR}/include/public/*/*.h*")
+file(GLOB PRIVATE_HEADER_LIST CONFIGURE_DEPENDS "${ExecutionNodes_SOURCE_DIR}/include/private/execution_nodes/internal/*.h*")
+
 file(GLOB SOURCE_LIST CONFIGURE_DEPENDS "${ExecutionNodes_SOURCE_DIR}/src/*.cpp")
 
 
 # Make an automatic library - will be static or dynamic based on user setting
-add_library(lib_execution_nodes execution_nodes.cpp ${HEADER_LIST})
+add_library(lib_execution_nodes execution_nodes.cpp ${PUBLIC_HEADER_LIST} ${PRIVATE_HEADER_LIST})
 
 # Add source files
 target_sources(lib_execution_nodes PRIVATE ${SOURCE_LIST})
@@ -39,6 +40,11 @@ target_compile_features(lib_execution_nodes PUBLIC cxx_std_17)
 
 # IDEs should put the headers in a nice place
 source_group(
-  TREE "${PROJECT_SOURCE_DIR}/include"
-  PREFIX "Header Files"
-  FILES ${HEADER_LIST})
+  TREE "${PROJECT_SOURCE_DIR}/include/public"
+  PREFIX "Public Header Files"
+  FILES ${PUBLIC_HEADER_LIST})
+
+source_group(
+  TREE "${PROJECT_SOURCE_DIR}/include/private"
+  PREFIX "Private Header Files"
+  FILES ${PRIVATE_HEADER_LIST})
