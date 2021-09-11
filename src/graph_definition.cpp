@@ -93,7 +93,7 @@ std::string readFileToString(const std::string &filePath) {
   return retval;
 }
 
-GraphDefinition loadGraphDefFromJson(const std::string &jsonFilePath) {
+GraphDefinition loadGraphDefFromJsonFile(const std::string &jsonFilePath) {
 
   GraphDefinition retval;
   std::string content = readFileToString(jsonFilePath);

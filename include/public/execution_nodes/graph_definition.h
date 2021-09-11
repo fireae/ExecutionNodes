@@ -32,7 +32,7 @@ struct GraphDefinition {
  * @param jsonFilePath The path to the json file.
  * @return GraphDefinition The resulting graph definition.
  */
-GraphDefinition loadGraphDefFromJson(const std::string &jsonFilePath);
+GraphDefinition loadGraphDefFromJsonFile(const std::string &jsonFilePath);
 /**
  * @brief Load a graph definition from a json object.
  *
