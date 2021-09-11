@@ -33,16 +33,16 @@ inline void addMark(const std::string &nodeName, std::set<std::string> &marks) {
 // connection from source N to destination Mx.
 typedef std::map<std::string /*node name*/,
                  std::vector<std::string> /*node names*/>
-    DescendancyMap;
+    DependencyMap;
 
 // This function returns a const iterator to the first node that has not a
 // permanent mark. If there is no node without a permanent mark, cend() is
 // returned.
-DescendancyMap::const_iterator
-getUnmarkedNode(const DescendancyMap &descMap,
+DependencyMap::const_iterator
+getUnmarkedNode(const DependencyMap &descMap,
                 const std::set<std::string> permanentMarks) {
 
-  DescendancyMap::const_iterator it;
+  DependencyMap::const_iterator it;
 
   for (it = descMap.cbegin(); it != descMap.cend(); it++) {
     const auto &nodeName = it->first;
@@ -59,10 +59,14 @@ getUnmarkedNode(const DescendancyMap &descMap,
 // The visit function is called recursively and is at the core of the algorithm.
 // It is called for each descendants of the node and marks the node along the
 // way to find the last node at the end of the graph.
-void visit(const std::string &nodeName, const DescendancyMap &descMap,
+void visit(const std::string &nodeName, const DependencyMap &descMap,
            std::set<std::string> &permanentMarks,
            std::set<std::string> &temporaryMarks,
            std::list<std::string> &sortedList) {
+
+  static int recursionDepth = 0;
+
+  recursionDepth++;
 
   // If it has a permanent mark, we already added the node to the list.
   if (hasMark(nodeName, permanentMarks)) {
@@ -103,6 +107,28 @@ void visit(const std::string &nodeName, const DescendancyMap &descMap,
   // Finally, add it to the beginning of the sorted list, pushing all  others
   // further back.
   sortedList.push_front(nodeName);
+  recursionDepth--;
+  LOG_DEBUG << "Add node " << nodeName << " at recursion depth "
+            << recursionDepth;
+}
+
+size_t countPredecessors(size_t counter, const std::string &nodeName,
+                         const DependencyMap &predecMap) {
+
+  auto it = predecMap.find(nodeName);
+  if (it == predecMap.end()) {
+    return 0u;
+  }
+  size_t maxPredecessors = 0;
+  const auto &predecs = it->second;
+  for (const auto &p : predecs) {
+    size_t count = countPredecessors(counter, p, predecMap);
+    count++;
+    if (count > maxPredecessors) {
+      maxPredecessors = count;
+    }
+  }
+  return maxPredecessors;
 }
 
 /*
@@ -111,7 +137,7 @@ E.; Rivest, Ronald L.; Stein, Clifford (2001), "Section 22.4: Topological sort",
 Introduction to Algorithms (2nd ed.), MIT Press and McGraw-Hill, pp. 549–552,
 ISBN 0-262-03293-7
 */
-std::vector<std::string /*node name*/>
+SortedNodes
 getNodeExecutionOrder(const std::vector<ConnectionDefinition> edges) {
 
   // This empty list will contain the sorted nodes and be returned.
@@ -119,7 +145,7 @@ getNodeExecutionOrder(const std::vector<ConnectionDefinition> edges) {
   // front.
   std::list<std::string> list;
 
-  DescendancyMap descMap;
+  DependencyMap descMap;
   std::set<std::string /*node name*/> permanentMarks;
   std::set<std::string /*node name*/> temporaryMarks;
 
@@ -146,9 +172,26 @@ getNodeExecutionOrder(const std::vector<ConnectionDefinition> edges) {
 
   } while (!done);
 
+  DependencyMap predecMap;
+  std::map<size_t, std::vector<std::string>> parallelMap;
+
+  for (const auto &edge : edges) {
+    predecMap[edge.dst.nodeName].emplace_back(edge.src.nodeName);
+  }
+
+  for (const auto &nodeName : list) {
+    size_t n = countPredecessors(0, nodeName, predecMap);
+    LOG_DEBUG << nodeName << " has " << n << " predecessors.";
+    parallelMap[n].emplace_back(nodeName);
+  }
+
+  SortedNodes retval;
+
   // copy the list to a vector. I personally find a vector easier to work with,
   // that is why I want the function to return a vector rather than a list.
-  std::vector<std::string> retval(list.begin(), list.end());
+  retval.linearExecutionOrder =
+      std::vector<std::string>(list.begin(), list.end());
+  retval.parallelExecutionMap = parallelMap;
   return retval;
 }
 

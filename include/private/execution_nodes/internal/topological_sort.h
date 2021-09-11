@@ -18,7 +18,8 @@ namespace execution_nodes {
  * @param edges The edges (connections) between the nodes
  * @return std::vector<std::string> The names of the nodes in execution order.
  */
-std::vector<std::string /*node name*/>
+
+SortedNodes
 getNodeExecutionOrder(const std::vector<ConnectionDefinition> edges);
 
 } // namespace execution_nodes

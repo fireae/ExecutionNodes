@@ -1,8 +1,15 @@
 #pragma once
 #include <cstdint>
 #include <string>
+#include <vector>
+#include <map>
 
 namespace execution_nodes {
+
+struct SortedNodes {
+  std::vector<std::string /*node name*/> linearExecutionOrder;
+  std::map<size_t, std::vector<std::string>> parallelExecutionMap;
+};
 
 typedef std::string PortId;
 typedef std::string ConnectionName;
@@ -24,7 +31,6 @@ enum class PortType : uint8_t {
    */
   OUTPUT,
 };
-
 
 /**
  * @brief Defines a port.
@@ -88,7 +94,8 @@ struct ConnectionDefinition {
    * @brief The destination of the connection.
    */
   Port dst;
-  explicit ConnectionDefinition(const std::string& srcId, const std::string& dstId);
+  explicit ConnectionDefinition(const std::string &srcId,
+                                const std::string &dstId);
   ConnectionDefinition() = default;
   ConnectionDefinition(const Port &srcPort, const Port &dstPort)
       : src(srcPort), dst(dstPort) {}
