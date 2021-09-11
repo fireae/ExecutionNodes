@@ -1,5 +1,5 @@
-#include <execution_nodes/connector.h>
-#include <execution_nodes/logging.hpp>
+#include <execution_nodes/internal/connector.h>
+#include <execution_nodes/internal/logging.hpp>
 
 #include <functional>
 

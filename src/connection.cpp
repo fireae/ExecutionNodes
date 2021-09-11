@@ -1,9 +1,8 @@
 
 #include <execution_nodes/connection.h>
+#include <execution_nodes/internal/helpers.h>
+#include <execution_nodes/internal/logging.hpp>
 #include <vector>
-#include <execution_nodes/helpers.h>
-
-#include <execution_nodes/logging.hpp>
 
 namespace execution_nodes {
 
@@ -18,7 +17,6 @@ PortId createPortId(const std::string &nodeName, const std::string &portName) {
 ConnectionName createConnectionName(const PortId &out, const PortId &in) {
   return out + "->" + in;
 }
-
 
 ConnectionDefinition::ConnectionDefinition(const std::string &srcId,
                                            const std::string &dstId) {

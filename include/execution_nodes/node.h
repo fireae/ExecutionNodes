@@ -2,7 +2,7 @@
 
 #include <any>
 #include <execution_nodes/connection.h>
-#include <execution_nodes/logging.hpp>
+#include <execution_nodes/internal/logging.hpp>
 #include <execution_nodes/node_definition.h>
 #include <memory>
 #include <set>

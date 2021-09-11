@@ -1,6 +1,6 @@
 #include <execution_nodes/graph.h>
-#include <execution_nodes/topological_sort.h>
-#include <execution_nodes/connector.h>
+#include <execution_nodes/internal/topological_sort.h>
+#include <execution_nodes/internal/connector.h>
 
 namespace execution_nodes {
 

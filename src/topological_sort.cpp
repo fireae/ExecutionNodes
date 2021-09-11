@@ -1,5 +1,5 @@
-#include <execution_nodes/logging.hpp>
-#include <execution_nodes/topological_sort.h>
+#include <execution_nodes/internal/logging.hpp>
+#include <execution_nodes/internal/topological_sort.h>
 
 #include <map>
 #include <set>

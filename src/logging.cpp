@@ -1,6 +1,6 @@
 // log.cpp
 #include <chrono>
-#include <execution_nodes/logging.hpp>
+#include <execution_nodes/internal/logging.hpp>
 #include <iostream>
 #include <map>
 

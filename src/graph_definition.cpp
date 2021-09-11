@@ -1,6 +1,6 @@
 #include <execution_nodes/graph_definition.h>
-#include <execution_nodes/logging.hpp>
-#include <execution_nodes/helpers.h>
+#include <execution_nodes/internal/helpers.h>
+#include <execution_nodes/internal/logging.hpp>
 
 #include <execution_nodes/connection.h>
 #include <fstream>
@@ -12,8 +12,8 @@ Port portIdToPort(const std::string &str) {
   auto tokens = split(str, ':');
   if (tokens.size() != 2) {
     THROW_ERROR << "The string '" << str
-                       << "' is no valid port definition. Please use for "
-                          "example: 'nodeName:portName'";
+                << "' is no valid port definition. Please use for "
+                   "example: 'nodeName:portName'";
   }
   retval.nodeName = tokens[0];
   retval.portName = tokens[1];
@@ -28,7 +28,7 @@ void from_json(const nlohmann::json &j, GraphDefinition &d) {
 
   } catch (const std::exception &ex) {
     THROW_ERROR << "Unable to parse name of graph definition from json: "
-                       << ex.what();
+                << ex.what();
   }
 
   if (j.find("nodes") == j.end()) {
@@ -73,12 +73,11 @@ std::string readFileToString(const std::string &filePath) {
     file.open(filePath);
   } catch (const std::exception &ex) {
     THROW_ERROR << "Error when opening file from path '" << filePath
-                       << "': " << ex.what();
+                << "': " << ex.what();
   }
 
   if (!file.is_open()) {
-    THROW_ERROR << "Unable to open file from path '" << filePath
-                       << "'";
+    THROW_ERROR << "Unable to open file from path '" << filePath << "'";
   }
   std::string retval;
 
@@ -88,7 +87,7 @@ std::string readFileToString(const std::string &filePath) {
     retval = ss.str();
   } catch (const std::exception &ex) {
     THROW_ERROR << "Error when reading file from path '" << filePath
-                       << "': " << ex.what();
+                << "': " << ex.what();
   }
 
   return retval;
@@ -103,8 +102,8 @@ GraphDefinition loadGraphDefFromJson(const std::string &jsonFilePath) {
     j = nlohmann::json::parse(content);
     retval = loadGraphDefFromJson(j);
   } catch (const std::exception &ex) {
-    THROW_ERROR << "Error when parsing content from file '"
-                       << jsonFilePath << "'to json: " << ex.what();
+    THROW_ERROR << "Error when parsing content from file '" << jsonFilePath
+                << "'to json: " << ex.what();
   }
   return retval;
 }
