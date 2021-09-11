@@ -91,26 +91,23 @@ protected:
       obj = std::any_cast<T>(anyObj);
     } catch (const std::bad_any_cast &bac) {
 
-      std::string msg = "Error in node '"+
-                         name_ + "' of type '" + type_
-                        + "' when getting object from input on port '"
-                        + portName
-                        + "'. This error might come from a wrong typename in "
-                           "the template argument. Additional information: "
-                        + std::string(bac.what());
+      std::string msg = "Error in node '" + name_ + "' of type '" + type_ +
+                        "' when getting object from input on port '" +
+                        portName +
+                        "'. This error might come from a wrong typename in "
+                        "the template argument. Additional information: " +
+                        std::string(bac.what());
       reportError(msg);
     } catch (const std::exception &ex) {
 
-      
-      std::string msg =  "Error in node '" + name_ + "' of type '" + type_
-          + "' when getting object from input on port '" + portName
-          + "'. Additional information: " +std::string(ex.what());
+      std::string msg = "Error in node '" + name_ + "' of type '" + type_ +
+                        "' when getting object from input on port '" +
+                        portName +
+                        "'. Additional information: " + std::string(ex.what());
 
       reportError(msg);
     }
   }
-
-  void getInputInternal(const std::string &portName, std::any &anyObj);
 
   /**
    * @brief Get the setting using the key.
@@ -123,18 +120,17 @@ protected:
   template <class T> T getSetting(const std::string &key) {
 
     if (settings_.find(key) == settings_.end()) {
-      std::string msg = 
-      "Error when getting setting for node '" + name_
-             + "' of type '" + type_ + "'. There is no setting with key '"
-             + key + "'.";
+      std::string msg = "Error when getting setting for node '" + name_ +
+                        "' of type '" + type_ +
+                        "'. There is no setting with key '" + key + "'.";
       reportError(msg);
     }
     try {
       return settings_[key].get<T>();
     } catch (const std::exception &ex) {
-      
-      std::string msg = "Error when getting setting for node '" + name_
-             + "' of type '" + type_ + "': " +std::string(ex.what());
+
+      std::string msg = "Error when getting setting for node '" + name_ +
+                        "' of type '" + type_ + "': " + std::string(ex.what());
 
       reportError(msg);
     }
@@ -163,7 +159,6 @@ protected:
   std::set<std::string> getPortNames(PortType type);
 
 private:
-  void reportError(const std::string &msg);
   // Stores the name of the node
   std::string name_;
   // Stores the type of the node
@@ -175,6 +170,8 @@ private:
   std::shared_ptr<Connector> connector_;
 
   void setOutputInternal(const std::string &portName, const std::any &anyObj);
+  void getInputInternal(const std::string &portName, std::any &anyObj);
+  void reportError(const std::string &msg);
 };
 
 /**
