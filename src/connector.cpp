@@ -9,6 +9,17 @@ Connector::Connector(){
 
 };
 
+inline ConnectionId
+getConnectionByPortId(const PortId &portId,
+                      const std::map<PortId, ConnectionId> &connectionMap) {
+  ConnectionId retval = no_connection;
+  auto iter = connectionMap.find(portId);
+  if (iter != connectionMap.end()) {
+    retval = iter->second;
+  }
+  return retval;
+}
+
 void Connector::connect(const Port &out, const Port &in) {
 
   // In order to connect two ports we need to create a unique port id for both.
@@ -23,24 +34,31 @@ void Connector::connect(const Port &out, const Port &in) {
         << " connects to itself. This is not allowed and will be ignored.";
     return;
   }
-  auto iterOut = portTypeMap_.find(outPortId);
-  if (iterOut == portTypeMap_.end()) {
-    portTypeMap_[outPortId] = PortType::OUTPUT;
-    outputPortsPerNode_[out.nodeName].insert(out.portName);
-  } else if (iterOut->second == PortType::INPUT) {
-    THROW_ERROR << "Error when connecting ports: The port '" << outPortId
-                << "' was defined as input before but is now used as "
-                   "output. Port can not be both.";
-  }
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
 
-  auto iterIn = portTypeMap_.find(inPortId);
-  if (iterIn == portTypeMap_.end()) {
-    portTypeMap_[inPortId] = PortType::INPUT;
-    inputPortsPerNode_[in.nodeName].insert(in.portName);
-  } else if (iterIn->second == PortType::OUTPUT) {
-    THROW_ERROR << "Error when connecting ports: The port '" << inPortId
-                << "' was defined as output before but is now used as "
-                   "input. Port can not be both.";
+    auto iterOut = portTypeMap_.find(outPortId);
+    if (iterOut == portTypeMap_.end()) {
+      portTypeMap_[outPortId] = PortType::OUTPUT;
+      outputPortsPerNode_[out.nodeName].insert(out.portName);
+    } else if (iterOut->second == PortType::INPUT) {
+      THROW_ERROR << "Error when connecting ports: The port '" << outPortId
+                  << "' was defined as input before but is now used as "
+                     "output. Port can not be both.";
+    }
+  }
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    auto iterIn = portTypeMap_.find(inPortId);
+    if (iterIn == portTypeMap_.end()) {
+      portTypeMap_[inPortId] = PortType::INPUT;
+      inputPortsPerNode_[in.nodeName].insert(in.portName);
+    } else if (iterIn->second == PortType::OUTPUT) {
+      THROW_ERROR << "Error when connecting ports: The port '" << inPortId
+                  << "' was defined as output before but is now used as "
+                     "input. Port can not be both.";
+    }
   }
 
   registerOutput(out.nodeName, out.portName);
@@ -60,8 +78,12 @@ void Connector::registerOutput(const std::string &nodeName,
                                const std::string &portName) {
 
   auto portId = createPortId(nodeName, portName);
-  if (connectionMap_.find(portId) == connectionMap_.end()) {
-    connectionMap_[portId] = portId;
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    if (connectionMap_.find(portId) == connectionMap_.end()) {
+      connectionMap_[portId] = portId;
+    }
   }
 }
 
@@ -70,17 +92,20 @@ void Connector::registerAndConnectInput(const std::string &nodeName,
                                         const std::string &connection) {
 
   auto portId = createPortId(nodeName, portName);
+  {
+    std::lock_guard<std::mutex> lock(mutex_);
 
-  auto iter = connectionMap_.find(portId);
-  if (iter == connectionMap_.end()) {
-    connectionMap_[portId] = connection;
-  } else {
+    auto iter = connectionMap_.find(portId);
+    if (iter == connectionMap_.end()) {
+      connectionMap_[portId] = connection;
+    } else {
 
-    THROW_ERROR << "Error when connecting input port '" << portId << "' to '"
-                << connection
-                << "'. This input port is already "
-                   "connected to '"
-                << iter->second << "'";
+      THROW_ERROR << "Error when connecting input port '" << portId << "' to '"
+                  << connection
+                  << "'. This input port is already "
+                     "connected to '"
+                  << iter->second << "'";
+    }
   }
 }
 
@@ -89,6 +114,8 @@ void Connector::removeConnection(const std::string &nodeName,
                                  const std::string &connection) {
   auto portId = createPortId(nodeName, portName);
   {
+    std::lock_guard<std::mutex> lock(mutex_);
+
     auto iter = connectionMap_.find(portId);
     if (iter != connectionMap_.end()) {
       connectionMap_.erase(iter);
@@ -100,12 +127,16 @@ void Connector::removeConnection(const std::string &nodeName,
     }
   }
   {
+    std::lock_guard<std::mutex> lock(mutex_);
+
     auto iter = outputPortsPerNode_.find(nodeName);
     if (iter != outputPortsPerNode_.end()) {
       iter->second.erase(portName);
     }
   }
   {
+    std::lock_guard<std::mutex> lock(mutex_);
+
     auto iter = inputPortsPerNode_.find(nodeName);
     if (iter != inputPortsPerNode_.end()) {
       iter->second.erase(portName);
@@ -113,16 +144,11 @@ void Connector::removeConnection(const std::string &nodeName,
   }
 }
 
-ConnectionId Connector::getConnectionByPortId(const PortId &portId) {
-  ConnectionId retval = no_connection;
-  auto iter = connectionMap_.find(portId);
-  if (iter != connectionMap_.end()) {
-    retval = iter->second;
-  }
-  return retval;
-}
+
 
 void Connector::setObject(const PortId &portId, const std::any &obj) {
+
+  std::lock_guard<std::mutex> lock(mutex_);
 
   auto iter = portTypeMap_.find(portId);
 
@@ -132,7 +158,7 @@ void Connector::setObject(const PortId &portId, const std::any &obj) {
                 << "' This port is undefined.";
 
   } else if (iter->second == PortType::OUTPUT) {
-    auto connection = getConnectionByPortId(portId);
+    auto connection = getConnectionByPortId(portId, connectionMap_);
     if (connection != no_connection) {
       objectsMap_[connection] = obj;
     }
@@ -143,13 +169,14 @@ void Connector::setObject(const PortId &portId, const std::any &obj) {
 }
 
 bool Connector::hasObject(const PortId &portId) {
+  std::lock_guard<std::mutex> lock(mutex_);
 
   bool retval = false;
   auto iter = portTypeMap_.find(portId);
   if (iter == portTypeMap_.end()) {
     retval = false;
   } else if (iter->second == PortType::INPUT) {
-    auto connection = getConnectionByPortId(portId);
+    auto connection = getConnectionByPortId(portId, connectionMap_);
     if (connection != no_connection) {
       retval = objectsMap_.find(connection) != objectsMap_.end();
     } else {
@@ -166,6 +193,7 @@ bool Connector::hasObject(const PortId &portId) {
 }
 
 void Connector::getObject(const PortId &portId, std::any &obj) {
+  std::lock_guard<std::mutex> lock(mutex_);
 
   auto iter = portTypeMap_.find(portId);
   if (iter == portTypeMap_.end()) {
@@ -174,7 +202,7 @@ void Connector::getObject(const PortId &portId, std::any &obj) {
 
   } else if (iter->second == PortType::INPUT) {
 
-    auto connection = getConnectionByPortId(portId);
+    auto connection = getConnectionByPortId(portId, connectionMap_);
 
     if (connection != no_connection) {
       auto iter = objectsMap_.find(connection);
@@ -199,15 +227,16 @@ void Connector::getObject(const PortId &portId, std::any &obj) {
 }
 
 void Connector::getObjectFromOutput(const PortId &portId, std::any &obj) {
+  std::lock_guard<std::mutex> lock(mutex_);
 
-      auto iter = portTypeMap_.find(portId);
+  auto iter = portTypeMap_.find(portId);
   if (iter == portTypeMap_.end()) {
 
     THROW_ERROR << "The port port '" << portId << "' is undefined.";
 
   } else if (iter->second == PortType::OUTPUT) {
 
-    auto connection = getConnectionByPortId(portId);
+    auto connection = getConnectionByPortId(portId, connectionMap_);
 
     if (connection != no_connection) {
       auto iter = objectsMap_.find(connection);
@@ -229,7 +258,6 @@ void Connector::getObjectFromOutput(const PortId &portId, std::any &obj) {
     THROW_ERROR << "Error when getting object from id '" << portId
                 << "'. This port is not an output port.";
   }
-
 }
 
 std::set<std::string> Connector::getConnectedPorts(const std::string &nodeName,
@@ -238,11 +266,15 @@ std::set<std::string> Connector::getConnectedPorts(const std::string &nodeName,
   std::set<std::string> retval;
 
   if (type == PortType::INPUT) {
+    std::lock_guard<std::mutex> lock(mutex_);
+
     auto iter = inputPortsPerNode_.find(nodeName);
     if (iter != inputPortsPerNode_.end()) {
       retval = iter->second;
     }
   } else if (type == PortType::OUTPUT) {
+    std::lock_guard<std::mutex> lock(mutex_);
+
     auto iter = outputPortsPerNode_.find(nodeName);
     if (iter != outputPortsPerNode_.end()) {
       retval = iter->second;

@@ -6,10 +6,10 @@
 
 #include <execution_nodes/connection.h>
 #include <memory>
+#include <mutex>
 #include <string>
 
 namespace execution_nodes {
-
 
 /**
  * @brief The function of the Connector class is to hold the objects which are
@@ -88,14 +88,10 @@ public:
                                           PortType type);
 
 private:
-  /**
-   * @brief Get the connection identifier which is associated with the specified
-   * port identifier.
-   *
-   * @param portId The port id for which to get the connection id.
-   * @return ConnectionId The id of the connection for the specified port.
-   */
-  ConnectionId getConnectionByPortId(const PortId &portId);
+  Connector(const Connector&) = delete;
+
+  std::mutex mutex_;
+
 
   // this map holds any object for each connection. Each connection can only
   // hold one object or no object at all, meaning there is no entry in this map
