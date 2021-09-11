@@ -90,15 +90,14 @@ public:
    */
   template <class T> void getOutput(const Port &outputPort, T &object) {
 
-    auto portId = createPortId(outputPort);
-    std::any anyObj;
-    connector_->getObjectFromOutput(portId, anyObj);
     try {
-      obj = std::any_cast<T>(anyObj);
+      std::any anyObj;
+      getOutputInternal(outputPort, anyObj);
+      object = std::any_cast<T>(anyObj);
     } catch (const std::exception &ex) {
-
-      THROW_ERROR << "Error when getting object from port '" << portId
-                  << "'. Additional information: " << ex.what();
+      std::string msg = "Error when getting object from port '" + createPortId(outputPort) +
+                        "'. Additional information: " + std::string(ex.what());
+      reportError(msg);
     }
   }
 
@@ -115,8 +114,7 @@ public:
    * @param object The object to be put.
    */
   template <class T> void fakeOutput(const Port &outputPort, const T &object) {
-    auto portId = createPortId(outputPort);
-    connector_->setObject(portId, object);
+    fakeOutputInternal(outputPort, object);
   }
 
 private:
@@ -127,6 +125,12 @@ private:
    * @param node The node to be created and added.
    */
   void createAndAddNode(const NodeDefinition &node);
+
+  void getOutputInternal(const Port &outputPort, std::any &anyObj);
+
+  void fakeOutputInternal(const Port &outputPort, const std::any &anyObj);
+
+  void reportError(const std::string &msg);
 
   /**
    * @brief Removes all connection from and to the node.

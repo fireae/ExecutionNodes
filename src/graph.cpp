@@ -1,7 +1,7 @@
 #include <execution_nodes/graph.h>
-#include <execution_nodes/internal/topological_sort.h>
 #include <execution_nodes/internal/connector.h>
 #include <execution_nodes/internal/logging.hpp>
+#include <execution_nodes/internal/topological_sort.h>
 
 namespace execution_nodes {
 
@@ -144,6 +144,20 @@ void Graph::createAndAddNode(const NodeDefinition &node) {
                 << "'. This node type can not be found in the registry.";
   }
 }
+
+void Graph::getOutputInternal(const Port &outputPort, std::any &anyObj) {
+
+  auto portId = createPortId(outputPort);
+  connector_->getObjectFromOutput(portId, anyObj);
+}
+
+void Graph::fakeOutputInternal(const Port &outputPort, const std::any &anyObj) {
+
+  auto portId = createPortId(outputPort);
+  connector_->setObject(portId, anyObj);
+}
+
+void Graph::reportError(const std::string &msg) { THROW_ERROR << msg; }
 
 void Graph::disconnectNode(const std::string &nodeName) {
 
