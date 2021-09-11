@@ -1,3 +1,4 @@
+#include <execution_nodes/connector.h>
 #include <execution_nodes/logging.hpp>
 #include <execution_nodes/node.h>
 
@@ -19,6 +20,16 @@ std::set<std::string> Node::getOutputPortNames() {
 }
 std::set<std::string> Node::getPortNames(PortType type) {
   return connector_->getConnectedPorts(name_, type);
+}
+
+void Node::setOutputInternal(const std::string &portName,
+                             const std::any &anyObj) {
+  connector_->setObject(createPortId(name_, portName), anyObj);
+}
+
+void Node::getInputInternal(const std::string &portName, std::any &anyObj) {
+
+  connector_->getObject(createPortId(name_, portName), anyObj);
 }
 
 std::string Node::getName() { return name_; }

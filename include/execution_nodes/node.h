@@ -1,12 +1,18 @@
 #pragma once
 
-#include <execution_nodes/connector.h>
+#include <any>
+#include <execution_nodes/connection.h>
 #include <execution_nodes/logging.hpp>
 #include <execution_nodes/node_definition.h>
 #include <memory>
+#include <set>
 #include <vector>
 
 namespace execution_nodes {
+
+class Connector;
+
+typedef std::shared_ptr<Connector> ConnectorPtr;
 
 /**
  * @brief Base class for each node. Inherit from this node in order to implement
@@ -22,7 +28,8 @@ public:
    * @param nodeDefinition
    * @param connector
    */
-  Node(const NodeDefinition &nodeDefinition, const ConnectorPtr &connector);
+  Node(const NodeDefinition &nodeDefinition,
+       const std::shared_ptr<Connector> &connector);
   /**
    * @brief The execute function will be called by the graph. Each input and
    * output to and from the node shall be handeled in this function. The execute
@@ -59,8 +66,9 @@ protected:
    * correspond to an output port.
    */
   template <class T> void setOutput(const std::string &portName, const T &obj) {
-    connector_->setObject(createPortId(name_, portName), obj);
+    setOutputInternal(portName, obj);
   }
+
   /**
    * @brief Check whether a specified port has got any input.
    *
@@ -80,7 +88,7 @@ protected:
 
     try {
       std::any anyObj;
-      connector_->getObject(createPortId(name_, portName), anyObj);
+      getInputInternal(portName, anyObj);
       obj = std::any_cast<T>(anyObj);
     } catch (const std::bad_any_cast &bac) {
 
@@ -89,7 +97,6 @@ protected:
                   << "'. This error might come from a wrong typename in "
                      "the template argument. Additional information: "
                   << bac.what();
-
     } catch (const std::exception &ex) {
 
       THROW_ERROR << "Error in node '" << name_ << "' of type '" << type_
@@ -97,6 +104,9 @@ protected:
                   << "'. Additional information: " << ex.what();
     }
   }
+
+  void getInputInternal(const std::string &portName, std::any &anyObj);
+
   /**
    * @brief Get the setting using the key.
    *
@@ -152,6 +162,8 @@ private:
   nlohmann::json settings_;
   // The connector object is shared among all nodes.
   std::shared_ptr<Connector> connector_;
+
+  void setOutputInternal(const std::string &portName, const std::any &anyObj);
 };
 
 /**

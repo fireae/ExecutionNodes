@@ -1,11 +1,12 @@
 #pragma once
 
-#include <execution_nodes/connector.h>
 #include <execution_nodes/node.h>
 #include <execution_nodes/node_definition.h>
 #include <functional>
 
 namespace execution_nodes {
+
+class Connector;
 
 typedef std::function<NodePtr(const NodeDefinition &,
                               const std::shared_ptr<Connector> &)>
