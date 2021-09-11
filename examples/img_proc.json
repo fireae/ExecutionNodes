@@ -1,22 +1,43 @@
 {
     "name": "Image Processing Example",
     "nodes": {
-        "load_image": {
+        "load_image_1": {
             "type": "LoadImageNode",
             "settings": {
                 "imageFilePath": "C:/Temp/test.bmp"
             }
         },
-        "binary": {
-            "type": "BinarizeImageNode",
+        "load_image_2": {
+            "type": "LoadImageNode",
             "settings": {
-                "threshold": 100
+                "imageFilePath": "C:/Temp/test2.bmp"
             }
         },
-        "blur": {
+        "binarize_1": {
+            "type": "BinarizeImageNode",
+            "settings": {
+                "threshold": 110
+            }
+        },
+        "binarize_2": {
+            "type": "BinarizeImageNode",
+            "settings": {
+                "threshold": 254
+            }
+        },
+        "adder": {
+            "type": "AddImagesNode"
+        },
+        "blur_1": {
             "type": "GaussianBlurNode",
             "settings": {
                 "sigma": 2.3
+            }
+        },
+        "blur_2": {
+            "type": "GaussianBlurNode",
+            "settings": {
+                "sigma": 1.0
             }
         },
         "display": {
@@ -27,9 +48,13 @@
         }
     },
     "connections": [
-        [ "load_image:image" , "binary:image" ],
-        [ "binary:binary" , "blur:image" ],
-        [ "blur:blurred" , "display:image" ]
+        [ "load_image_1:image" , "binarize_1:image" ],
+        [ "binarize_1:binary" , "blur_1:image" ],
+        [ "blur_1:blurred" , "adder:image1" ],
+        [ "load_image_2:image" , "binarize_2:image" ],
+        [ "binarize_2:binary" , "blur_2:image" ],
+        [ "blur_2:blurred" , "adder:image2" ],
+        [ "adder:result" , "display:image" ]
     ]
 }
 
