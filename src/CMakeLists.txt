@@ -14,7 +14,8 @@ add_library(lib_execution_nodes execution_nodes.cpp ${HEADER_LIST})
 target_sources(lib_execution_nodes PRIVATE ${SOURCE_LIST})
 
 # We need this directory, and users of our library will need it too
-target_include_directories(lib_execution_nodes PUBLIC ../include)
+target_include_directories(lib_execution_nodes PUBLIC ../include/public)
+target_include_directories(lib_execution_nodes PRIVATE ../include/private)
 
 if(USE_EXTERNAL_NLOHMANN_JSON)
   find_package(nlohmann_json 3.10.2 REQUIRED)
