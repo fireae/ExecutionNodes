@@ -11,6 +11,22 @@ typedef std::string ConnectionId;
 static const std::string no_connection{""};
 
 /**
+ * @brief Defining the two different types of ports.
+ */
+enum class PortType : uint8_t {
+  /**
+   * @brief The port is an input. Objects can only be retrieved from such a
+   * port.
+   */
+  INPUT,
+  /**
+   * @brief The port is an output. Objects can only be set to such an port.
+   */
+  OUTPUT,
+};
+
+
+/**
  * @brief Defines a port.
  *
  */
