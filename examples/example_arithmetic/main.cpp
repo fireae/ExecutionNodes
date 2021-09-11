@@ -1,6 +1,4 @@
 #include <execution_nodes/execution_nodes.h>
-#include <execution_nodes/node.h>
-#include <execution_nodes/node_registry.h>
 #include <iostream>
 #include <random>
 
@@ -111,7 +109,7 @@ int main() {
   Graph graph(graphDef, registry);
 
   //while (true) {
-    graph.execute();
+    graph.executeSerial();
   //};
 
   /*

@@ -153,7 +153,7 @@ TEST_CASE("Graph hasNode()", "Test") {
 
 TEST_CASE("Execute Simple Graph", "Test") {
   auto graph = constructABC(42);
-  graph->execute();
+  graph->execute(ExecutionMode::SERIAL);
   REQUIRE(executionTrack.size() == 3); // exactly the nodes where executed
   REQUIRE(executionTrack[0] == "A");   // first node was A
   REQUIRE(executionTrack[1] == "B");   // then B
@@ -165,7 +165,7 @@ TEST_CASE("Remove Connection from Graph", "Test") {
   graph->removeConnection(
       ConnectionDefinition(Port("B", "out"), Port("C", "in")));
   REQUIRE(graph->hasNode("C") == false);
-  graph->execute();
+  graph->execute(ExecutionMode::SERIAL);
   REQUIRE(executionTrack.size() == 2);
   REQUIRE(executionTrack[0] == "A");
   REQUIRE(executionTrack[1] == "B");
@@ -181,7 +181,7 @@ TEST_CASE("Add Node to Graph", "Test") {
   graph->addNode(NodeDefinition("C", "TestSink", setting),
                  {ConnectionDefinition("B:out", "C:in")});
   REQUIRE(graph->hasNode("C") == true);
-  graph->execute();
+  graph->execute(ExecutionMode::SERIAL);
   REQUIRE(executionTrack.size() == 3);
   REQUIRE(executionTrack[0] == "A");
   REQUIRE(executionTrack[1] == "B");
@@ -198,7 +198,7 @@ TEST_CASE("Remove Nodes from Graph", "Test") {
   REQUIRE(graph->hasNode("A") == true);
   REQUIRE(graph->hasNode("B") == false);
   REQUIRE(graph->hasNode("C") == false);
-  graph->execute();
+  graph->execute(ExecutionMode::SERIAL);
   REQUIRE(executionTrack.size() == 1);
   REQUIRE(executionTrack[0] == "A");
 }
@@ -211,7 +211,7 @@ TEST_CASE("Add Connection to Graph", "Test") {
   REQUIRE(graph->hasNode("B") == false);
   REQUIRE(graph->hasNode("C") == true);
   graph->addConnection(ConnectionDefinition("A:out", "C:in"));
-  graph->execute();
+  graph->execute(ExecutionMode::SERIAL);
   REQUIRE(executionTrack.size() == 2);
   REQUIRE(executionTrack[0] == "A");
   REQUIRE(executionTrack[1] == "C");
@@ -220,7 +220,7 @@ TEST_CASE("Add Connection to Graph", "Test") {
 TEST_CASE("Get Output from Node in Graph", "Test") {
 
   auto graph = constructABC(42);
-  graph->execute();
+  graph->execute(ExecutionMode::SERIAL);
   int bout;
   graph->getOutput(Port("B", "out"), bout);
   REQUIRE(bout == 42);
@@ -233,7 +233,7 @@ TEST_CASE("Fake Output of Node in Graph", "Test") {
   int aout;
   graph->getOutput(Port("A", "out"), aout);
   REQUIRE(aout == 69);
-  graph->execute();
+  graph->execute(ExecutionMode::SERIAL);
   graph->getOutput(Port("A", "out"), aout);
   REQUIRE(aout == 42);
 }
@@ -266,7 +266,7 @@ TEST_CASE("Graph from JSON", "Test") {
   REQUIRE(graph.hasNode("A") == true);
   REQUIRE(graph.hasNode("B") == true);
   REQUIRE(graph.hasNode("C") == true);
-  graph.execute();
+  graph.execute(ExecutionMode::SERIAL);
   REQUIRE(executionTrack.size() == 3);
   REQUIRE(executionTrack[0] == "A");
   REQUIRE(executionTrack[1] == "B");
@@ -303,7 +303,7 @@ TEST_CASE("Graph from JSON File", "Test") {
   REQUIRE(graph.hasNode("A") == true);
   REQUIRE(graph.hasNode("B") == true);
   REQUIRE(graph.hasNode("C") == true);
-  graph.execute();
+  graph.execute(ExecutionMode::SERIAL);
   REQUIRE(executionTrack.size() == 3);
   REQUIRE(executionTrack[0] == "A");
   REQUIRE(executionTrack[1] == "B");
@@ -329,7 +329,7 @@ TEST_CASE("Node Checks", "Test") {
   REQUIRE(graph.hasNode("A") == true);
   REQUIRE(graph.hasNode("T") == true);
   REQUIRE(graph.hasNode("C") == true);
-  graph.execute();
+  graph.execute(ExecutionMode::PARALLEL);
 
   REQUIRE(executionTrack.size() == 3);
   REQUIRE(executionTrack[0] == "A");

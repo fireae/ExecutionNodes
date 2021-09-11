@@ -156,7 +156,7 @@ int main() {
   Graph graph(graphDef, registry);
 
   // while (true) {
-  graph.execute();
+  graph.executeSerial();
   //};
 
   /*
