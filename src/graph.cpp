@@ -2,8 +2,17 @@
 #include <execution_nodes/internal/connector.h>
 #include <execution_nodes/internal/logging.hpp>
 #include <execution_nodes/internal/topological_sort.h>
+#include <execution_nodes/thirdparty/thread-pool-2.0.0/thread_pool.hpp>
 
 namespace execution_nodes {
+
+static thread_pool threadPool;
+
+/*
+struct Graph::Hidden {
+thread_pool threadPool;
+};
+*/
 
 std::string toString(const ConnectionDefinition &cn) {
   return cn.src.nodeName + ":" + cn.src.portName + " -> " + cn.dst.nodeName +
@@ -27,9 +36,8 @@ size_t getIndexOfElement(const std::string &element,
 Graph::Graph(const GraphDefinition &graphDefinition,
              const NodeRegistry &registry)
     : name_(graphDefinition.name),
-      connector_(std::make_shared<Connector>(Connector())),
+      connector_(std::shared_ptr<Connector>(new Connector())),
       registry_(registry) {
-
   for (const auto &nodeDefinition : graphDefinition.nodes) {
     createAndAddNode(nodeDefinition);
   }
@@ -43,7 +51,6 @@ Graph::Graph(const GraphDefinition &graphDefinition,
 
 void Graph::addNode(const NodeDefinition &node,
                     const std::vector<ConnectionDefinition> &connections) {
-
   if (connections.size() == 0) {
     THROW_ERROR << "No connections specified. You must specify at least one "
                    "connection and all connections specified must be from or "
@@ -87,7 +94,6 @@ void Graph::addNode(const NodeDefinition &node,
 }
 
 void Graph::removeNode(const std::string &nodeName) {
-
   if (!hasNode(nodeName)) {
     LOG_WARNING << "The node '" << nodeName << "' does not exist.";
     return;
@@ -108,7 +114,6 @@ void Graph::removeNode(const std::string &nodeName) {
 }
 
 bool Graph::hasNode(const std::string &nodeName) {
-
   for (const auto &node : nodes_) {
     if (node->getName() == nodeName) {
       return true;
@@ -118,7 +123,6 @@ bool Graph::hasNode(const std::string &nodeName) {
 }
 
 void Graph::createAndAddNode(const NodeDefinition &node) {
-
   if (hasNode(node.name)) {
     LOG_ERROR << "The node '" << node.name << "' of type '" << node.type
               << "' can not be created because there already is a node with "
@@ -146,13 +150,11 @@ void Graph::createAndAddNode(const NodeDefinition &node) {
 }
 
 void Graph::getOutputInternal(const Port &outputPort, std::any &anyObj) {
-
   auto portId = createPortId(outputPort);
   connector_->getObjectFromOutput(portId, anyObj);
 }
 
 void Graph::fakeOutputInternal(const Port &outputPort, const std::any &anyObj) {
-
   auto portId = createPortId(outputPort);
   connector_->setObject(portId, anyObj);
 }
@@ -160,7 +162,6 @@ void Graph::fakeOutputInternal(const Port &outputPort, const std::any &anyObj) {
 void Graph::reportError(const std::string &msg) { THROW_ERROR << msg; }
 
 void Graph::disconnectNode(const std::string &nodeName) {
-
   auto iter = connections_.begin();
   LOG_INFO << "Removing all connections from node '" << nodeName << "'...";
   while (iter != connections_.end()) {
@@ -173,7 +174,6 @@ void Graph::disconnectNode(const std::string &nodeName) {
 
 bool Graph::checkIfConnectionIsValid(const ConnectionDefinition &connection,
                                      bool doThrow) {
-
   bool dstExists = false;
   bool srcExists = false;
 
@@ -202,7 +202,6 @@ bool Graph::checkIfConnectionIsValid(const ConnectionDefinition &connection,
 }
 
 void Graph::addConnection(ConnectionDefinition connection, bool reorderNodes) {
-
   checkIfConnectionIsValid(connection, true);
 
   if (connections_.find(connection) == connections_.end()) {
@@ -220,7 +219,6 @@ void Graph::addConnection(ConnectionDefinition connection, bool reorderNodes) {
 
 void Graph::removeConnection(ConnectionDefinition connection,
                              bool reorderNodes) {
-
   auto iter = connections_.find(connection);
 
   if (iter == connections_.end()) {
@@ -236,29 +234,112 @@ void Graph::removeConnection(ConnectionDefinition connection,
   }
 }
 
-void Graph::execute() {
+void Graph::execute(ExecutionMode mode) {
+
+    if(mode == ExecutionMode::PARALLEL) {
+        executeParallel();
+    } else if(mode == ExecutionMode::SERIAL) {
+      executeSerial();
+    }
+}
+
+void Graph::executeSerial() {
+
+  using std::chrono::duration_cast;
+  using std::chrono::high_resolution_clock;
+  using std::chrono::milliseconds;
+
+  auto t1 = high_resolution_clock::now();
+
   for (const auto &node : nodes_) {
     std::string nodeName = node->getName();
     std::string nodeType = node->getType();
-    LOG_DEBUG << "Executing node '" << nodeName << "'...";
+    LOG_DEBUG << "Executing node '" << nodeName << "'";
     try {
-
+      LOG_DEBUG << "...";
       node->execute();
+      LOG_DEBUG << "Done";
     } catch (const std::exception &ex) {
       THROW_ERROR << "Error when executing node '" << nodeName << "' of type '"
                   << nodeType << "'. Addition info: " << ex.what();
     }
   }
+
+    auto t2 = high_resolution_clock::now();
+
+  /* Getting number of milliseconds as an integer. */
+  auto ms_int = duration_cast<milliseconds>(t2 - t1);
+
+  LOG_DEBUG << "Execution took " << ms_int.count() << "ms";
+
+}
+
+void Graph::executeParallel() {
+
+  using std::chrono::duration_cast;
+  using std::chrono::high_resolution_clock;
+  using std::chrono::milliseconds;
+
+  auto t1 = high_resolution_clock::now();
+
+  for (size_t rank = 0; rank < nodes_.size(); rank++) {
+    auto it = order_.parallelExecutionMap.find(rank);
+    if (it == order_.parallelExecutionMap.end()) {
+      continue;
+    } else {
+      std::vector<std::string> &nodesInRank = it->second;
+
+      size_t numberNodes = nodesInRank.size();
+      if (numberNodes == 0) {
+        continue;
+      } else if (numberNodes == 1) {
+        const auto &nodeName = nodesInRank[0];
+        size_t indexOfNode = nodeNameIndexMap_[nodeName];
+        auto &node = nodes_[indexOfNode];
+        LOG_DEBUG << "Executing node '" << nodeName << "'";
+        LOG_DEBUG << "...";
+        node->execute();
+        LOG_DEBUG << "Done";
+      } else {
+        std::string msg = "";
+        for (const auto &nodeName : nodesInRank) {
+
+          if (msg == "") {
+            msg = "Executing nodes ";
+          } else {
+            msg += " | ";
+          }
+          msg += (" '" + nodeName + "'");
+
+          size_t indexOfNode = nodeNameIndexMap_[nodeName];
+          Node *node = nodes_[indexOfNode].get();
+          threadPool.push_task([node]() { node->execute(); });
+        }
+
+        LOG_DEBUG << msg << '\0';
+        LOG_DEBUG << "...";
+        threadPool.wait_for_tasks();
+        LOG_DEBUG << "Done";
+      }
+    }
+  }
+
+  auto t2 = high_resolution_clock::now();
+
+  /* Getting number of milliseconds as an integer. */
+  auto ms_int = duration_cast<milliseconds>(t2 - t1);
+
+  LOG_DEBUG << "Execution in parallel took " << ms_int.count() << "ms";
 }
 
 void Graph::sortNodes() {
-
   LOG_DEBUG << "Sorting nodes...";
 
   std::vector<ConnectionDefinition> connectionVector(connections_.begin(),
                                                      connections_.end());
-  std::vector<std::string> sortedNodeNames =
-      getNodeExecutionOrder(connectionVector);
+  order_ = getNodeExecutionOrder(connectionVector);
+
+  nodeNameIndexMap_.clear();
 
   LOG_DEBUG << "Order before sorting:";
 
@@ -267,40 +348,45 @@ void Graph::sortNodes() {
     const auto &node = *it;
     const auto &nodeName = node->getName();
 
-    size_t index = getIndexOfElement(node->getName(), sortedNodeNames, false);
+    size_t index =
+        getIndexOfElement(node->getName(), order_.linearExecutionOrder, false);
 
-    if (index > sortedNodeNames.size()) {
+    if (index > order_.linearExecutionOrder.size()) {
       // remove this node
       it = nodes_.erase(it);
       LOG_DEBUG << "Node '" << nodeName
                 << "' has no connections and will be removed";
 
     } else {
+
       ++it;
       LOG_DEBUG << "Node '" << nodeName << "' will remain";
     }
   }
 
   std::sort(std::begin(nodes_), std::end(nodes_),
-            [&sortedNodeNames](const NodePtr &a, const NodePtr &b) {
-              size_t aIdx =
-                  getIndexOfElement(a->getName(), sortedNodeNames, true);
-              size_t bIdx =
-                  getIndexOfElement(b->getName(), sortedNodeNames, true);
+            [&](const NodePtr &a, const NodePtr &b) {
+              size_t aIdx = getIndexOfElement(
+                  a->getName(), order_.linearExecutionOrder, true);
+              size_t bIdx = getIndexOfElement(
+                  b->getName(), order_.linearExecutionOrder, true);
               return aIdx < bIdx;
             });
 
   LOG_DEBUG << "Order or execution after sorting:";
 
   std::string nodeNameList = "";
-
+  size_t index = 0;
   for (const auto &node : nodes_) {
     if (nodeNameList != "") {
       nodeNameList += " -> ";
     }
-    nodeNameList += node->getName();
+    auto nodeName = node->getName();
+    nodeNameList += nodeName;
+    nodeNameIndexMap_[nodeName] = index;
+    index++;
   }
-  LOG_DEBUG << nodeNameList;
+  LOG_DEBUG << nodeNameList << '\0';
 }
 
 } // namespace execution_nodes

@@ -7,6 +7,11 @@
 
 namespace execution_nodes {
 
+enum class ExecutionMode : uint8_t {
+  SERIAL,
+  PARALLEL,
+};
+
 /**
  * @brief The graph holds all the nodes in the right order of execution and all
  * connections between the nodes.
@@ -59,7 +64,11 @@ public:
   /**
    * @brief Execute each node in the graph in the right order of execution.
    */
-  void execute();
+  void execute(ExecutionMode mode);
+
+  void executeSerial();
+
+  void executeParallel();
 
   /**
    * @brief Add a new connection between two nodes (ports).
@@ -95,7 +104,8 @@ public:
       getOutputInternal(outputPort, anyObj);
       object = std::any_cast<T>(anyObj);
     } catch (const std::exception &ex) {
-      std::string msg = "Error when getting object from port '" + createPortId(outputPort) +
+      std::string msg = "Error when getting object from port '" +
+                        createPortId(outputPort) +
                         "'. Additional information: " + std::string(ex.what());
       reportError(msg);
     }
@@ -150,6 +160,10 @@ private:
   std::vector<std::unique_ptr<Node>> nodes_;
   // A list with all connections.
   std::set<ConnectionDefinition> connections_;
+
+  SortedNodes order_;
+  std::map<std::string /*node name*/, size_t> nodeNameIndexMap_;
+
   /**
    * @brief Sorts the nodes
    */
