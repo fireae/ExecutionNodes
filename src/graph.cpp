@@ -1,6 +1,7 @@
 #include <execution_nodes/graph.h>
 #include <execution_nodes/internal/topological_sort.h>
 #include <execution_nodes/internal/connector.h>
+#include <execution_nodes/internal/logging.hpp>
 
 namespace execution_nodes {
 

@@ -1,8 +1,13 @@
 #include <execution_nodes/internal/connector.h>
 #include <execution_nodes/internal/logging.hpp>
+
 #include <execution_nodes/node.h>
 
 namespace execution_nodes {
+
+void Node::reportError(const std::string& msg) {
+  Log().ErrorThrow("Node::errorReporter()") << msg;
+}
 
 Node::Node(const NodeDefinition &nodeDefinition, const ConnectorPtr &connector)
     : name_(nodeDefinition.name), type_(nodeDefinition.type),
