@@ -58,7 +58,7 @@ Log::~Log() noexcept(false) {
     os << std::endl;
     std::string msg = os.str();
 
-    if (messageLevel > LogLevel::LVL_ERROR) {
+    if (messageLevel >= LogLevel::LVL_ERROR) {
       std::cerr << msg;
     } else {
 
