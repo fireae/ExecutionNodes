@@ -168,6 +168,8 @@ void Graph::disconnectNode(const std::string &nodeName) {
     if ((iter->dst.nodeName == nodeName) || (iter->src.nodeName == nodeName)) {
       removeConnection(*iter, false);
       iter = connections_.begin();
+    } else {
+      iter++;
     }
   }
 }
@@ -236,11 +238,11 @@ void Graph::removeConnection(ConnectionDefinition connection,
 
 void Graph::execute(ExecutionMode mode) {
 
-    if(mode == ExecutionMode::PARALLEL) {
-        executeParallel();
-    } else if(mode == ExecutionMode::SERIAL) {
-      executeSerial();
-    }
+  if (mode == ExecutionMode::PARALLEL) {
+    executeParallel();
+  } else if (mode == ExecutionMode::SERIAL) {
+    executeSerial();
+  }
 }
 
 void Graph::executeSerial() {
@@ -250,6 +252,7 @@ void Graph::executeSerial() {
   using std::chrono::milliseconds;
 
   auto t1 = high_resolution_clock::now();
+  connector_->clearObjects();
 
   for (const auto &node : nodes_) {
     std::string nodeName = node->getName();
@@ -265,14 +268,19 @@ void Graph::executeSerial() {
     }
   }
 
-    auto t2 = high_resolution_clock::now();
+  auto t2 = high_resolution_clock::now();
 
   /* Getting number of milliseconds as an integer. */
   auto ms_int = duration_cast<milliseconds>(t2 - t1);
 
   LOG_DEBUG << "Execution took " << ms_int.count() << "ms";
-
 }
+
+uint32_t Graph::getParallelThreadCount() {
+  return static_cast<uint32_t>(threadPool.get_thread_count());
+}
+
+void Graph::setParallelThreadCount(uint32_t count) { threadPool.reset(count); }
 
 void Graph::executeParallel() {
 
@@ -282,6 +290,7 @@ void Graph::executeParallel() {
 
   auto t1 = high_resolution_clock::now();
 
+  connector_->clearObjects();
   for (size_t rank = 0; rank < nodes_.size(); rank++) {
     auto it = order_.parallelExecutionMap.find(rank);
     if (it == order_.parallelExecutionMap.end()) {

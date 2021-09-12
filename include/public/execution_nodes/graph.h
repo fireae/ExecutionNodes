@@ -64,18 +64,24 @@ public:
   /**
    * @brief Execute each node in the graph in the right order of execution.
    */
-  void execute(ExecutionMode mode);
+  void execute(ExecutionMode mode = ExecutionMode::SERIAL);
 
   void executeSerial();
 
   void executeParallel();
+
+  static uint32_t getParallelThreadCount();
+  inline static uint32_t hardwareConcurrency() { return 0; }
+  static void
+  setParallelThreadCount(uint32_t count = Graph::hardwareConcurrency());
 
   /**
    * @brief Add a new connection between two nodes (ports).
    * Reflexive connections (connection from a port to itself) are forbidden.
    * @param connection The connection that shall be added.
    * @param reorderNodes If set to true the nodes will be re-ordered so the
-   * order of execution will be updated according to the newly added connection.
+   * order of execution will be updated according to the newly added
+   * connection.
    */
   void addConnection(ConnectionDefinition connection, bool reorderNodes = true);
   /**
