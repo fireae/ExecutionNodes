@@ -95,7 +95,7 @@ public:
       (void)e;
       exceptionOccured = true;
     }
-    REQUIRE(exceptionOccured == true);
+    REQUIRE(exceptionOccured == false);
 
     try {
       exceptionOccured = false;
@@ -139,6 +139,26 @@ std::shared_ptr<Graph> constructABC(int seed) {
 
   return std::make_shared<Graph>(Graph(gd, registry));
 }
+
+std::shared_ptr<Graph> constructAB(int seed) {
+
+  nlohmann::json sourceSettings;
+  sourceSettings["seed"] = seed;
+
+  GraphDefinition gd;
+  gd.name = "test";
+
+  auto A = NodeDefinition("A", "TestSource", sourceSettings);
+  gd.nodes.emplace_back("B", "DummyNode");
+  gd.nodes.emplace_back(A);
+
+  gd.connections.emplace_back(Port("A", "out"), Port("B", "in"));
+
+  executionTrack = {};
+
+  return std::make_shared<Graph>(Graph(gd, registry));
+}
+
 
 TEST_CASE("Construct Simple Graph", "Test") { auto graph = constructABC(42); }
 
@@ -335,5 +355,18 @@ TEST_CASE("Node Checks", "Test") {
   REQUIRE(executionTrack[0] == "A");
   REQUIRE(executionTrack[1] == "T");
   REQUIRE(executionTrack[2] == "C");
+}
 
+TEST_CASE("Produce Unused Output", "Test") {
+
+  executionTrack = {};
+
+  auto graph = constructAB(42);
+
+  graph->execute();
+
+  REQUIRE(executionTrack.size() == 2);
+  REQUIRE(executionTrack[0] == "A");
+  REQUIRE(executionTrack[1] == "B");
+    
 }
