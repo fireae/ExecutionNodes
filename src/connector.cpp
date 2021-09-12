@@ -144,8 +144,6 @@ void Connector::removeConnection(const std::string &nodeName,
   }
 }
 
-
-
 void Connector::setObject(const PortId &portId, const std::any &obj) {
 
   std::lock_guard<std::mutex> lock(mutex_);
@@ -153,10 +151,8 @@ void Connector::setObject(const PortId &portId, const std::any &obj) {
   auto iter = portTypeMap_.find(portId);
 
   if (iter == portTypeMap_.end()) {
-
-    THROW_ERROR << "Error when setting output at port '" << portId
-                << "' This port is undefined.";
-
+    LOG_WARNING << "Setting output at port '" << portId
+                << "'. This port is undefined.";
   } else if (iter->second == PortType::OUTPUT) {
     auto connection = getConnectionByPortId(portId, connectionMap_);
     if (connection != no_connection) {
@@ -283,6 +279,13 @@ std::set<std::string> Connector::getConnectedPorts(const std::string &nodeName,
     LOG_ERROR << "Unknown port type.";
   }
   return retval;
+}
+
+void Connector::clearObjects() {
+
+  std::lock_guard<std::mutex> lock(mutex_);
+
+  objectsMap_.clear();
 }
 
 /*

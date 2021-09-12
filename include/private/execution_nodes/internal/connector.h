@@ -87,6 +87,8 @@ public:
   std::set<std::string> getConnectedPorts(const std::string &nodeName,
                                           PortType type);
 
+
+  void clearObjects();
 private:
   Connector(const Connector&) = delete;
 
