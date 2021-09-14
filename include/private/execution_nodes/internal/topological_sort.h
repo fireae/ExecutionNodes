@@ -7,6 +7,18 @@
 
 namespace execution_nodes {
 
+// Associates a node N to all of the nodes {M1, M2, ...} where there is a
+// connection from source N to destination Mx.
+typedef std::map<std::string /*node name*/,
+                 std::vector<std::string> /*node names*/>
+    DependencyMap;
+
+struct SortedNodes {
+  std::vector<std::string /*node name*/> linearExecutionOrder;
+  std::map<size_t, std::vector<std::string>> parallelExecutionMap;
+  DependencyMap predecessorMap;
+};
+
 /**
  * @brief Applies toplogical sorting of the nodes using depth-first search
  * according to their linear ordering such that for every connection

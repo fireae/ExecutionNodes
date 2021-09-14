@@ -29,12 +29,6 @@ inline void addMark(const std::string &nodeName, std::set<std::string> &marks) {
   }
 }
 
-// Associates a node N to all of the nodes {M1, M2, ...} where there is a
-// connection from source N to destination Mx.
-typedef std::map<std::string /*node name*/,
-                 std::vector<std::string> /*node names*/>
-    DependencyMap;
-
 // This function returns a const iterator to the first node that has not a
 // permanent mark. If there is no node without a permanent mark, cend() is
 // returned.
@@ -64,9 +58,6 @@ void visit(const std::string &nodeName, const DependencyMap &descMap,
            std::set<std::string> &temporaryMarks,
            std::list<std::string> &sortedList) {
 
-  static int recursionDepth = 0;
-
-  recursionDepth++;
 
   // If it has a permanent mark, we already added the node to the list.
   if (hasMark(nodeName, permanentMarks)) {
@@ -107,9 +98,6 @@ void visit(const std::string &nodeName, const DependencyMap &descMap,
   // Finally, add it to the beginning of the sorted list, pushing all  others
   // further back.
   sortedList.push_front(nodeName);
-  recursionDepth--;
-  LOG_DEBUG << "Add node " << nodeName << " at recursion depth "
-            << recursionDepth;
 }
 
 size_t countPredecessors(size_t counter, const std::string &nodeName,
@@ -187,11 +175,18 @@ getNodeExecutionOrder(const std::vector<ConnectionDefinition> edges) {
 
   SortedNodes retval;
 
+  for (const auto &e : list) {
+    if (predecMap.find(e) == predecMap.end()) {
+      predecMap[e] = {};
+    }
+  }
+
   // copy the list to a vector. I personally find a vector easier to work with,
   // that is why I want the function to return a vector rather than a list.
   retval.linearExecutionOrder =
       std::vector<std::string>(list.begin(), list.end());
   retval.parallelExecutionMap = parallelMap;
+  retval.predecessorMap = predecMap;
   return retval;
 }
 
