@@ -1,5 +1,6 @@
 #include <execution_nodes/graph.h>
 #include <execution_nodes/internal/connector.h>
+#include <execution_nodes/internal/helpers.h>
 #include <execution_nodes/internal/logging.hpp>
 #include <execution_nodes/internal/topological_sort.h>
 #include <execution_nodes/thirdparty/thread-pool-2.0.0/thread_pool.hpp>
@@ -12,25 +13,6 @@ struct Graph::HiddenTypeMembers {
 
   SortedNodes order;
 };
-
-std::string toString(const ConnectionDefinition &cn) {
-  return cn.src.nodeName + ":" + cn.src.portName + " -> " + cn.dst.nodeName +
-         ":" + cn.dst.portName;
-}
-
-size_t getIndexOfElement(const std::string &element,
-                         const std::vector<std::string> &list, bool doThrow) {
-  for (size_t i = 0; i < list.size(); i++) {
-    if (list[i] == element) {
-      return i;
-    }
-  }
-  if (doThrow) {
-    THROW_ERROR << "Error when sorting nodes. Unable to find node '" << element
-                << "' in the list of connections";
-  }
-  return list.size() + 1;
-}
 
 Graph::Graph(const GraphDefinition &graphDefinition,
              const NodeRegistry &registry)
