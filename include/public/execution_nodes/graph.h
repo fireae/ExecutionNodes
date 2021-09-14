@@ -62,16 +62,43 @@ public:
   bool hasNode(const std::string &nodeName);
 
   /**
-   * @brief Execute each node in the graph in the right order of execution.
+   * @brief Execute each node in the graph in the right order of execution in
+   * serial or parallel.
+   *
+   * @param mode The execution mode specifies parallel or serial execution of
+   * the node. In case each node (or most of them) perform rather expensive
+   * computation, setting the exeuction mode to parallel will result in much
+   * less execution time.
    */
   void execute(ExecutionMode mode = ExecutionMode::SERIAL);
 
+  /**
+   * @brief Execute each node in the graph in right order of execution in serial
+   * manner.
+   */
   void executeSerial();
 
+  /**
+   * @brief Execute each node in the graph in right order of execution in
+   * parallel manner.
+   */
   void executeParallel();
-
+  /**
+   * @brief Get the number of parallel threads running when executing the nodes
+   * in parallel.
+   *
+   * @return uint32_t The number of threads.
+   */
   static uint32_t getParallelThreadCount();
   inline static uint32_t hardwareConcurrency() { return 0; }
+  /**
+   * @brief Set the maximum number of parallel threads used when executing the
+   * nodes in parallel.
+   *
+   * @param count The desired maximum number of parallel threads. Setting a
+   * higher number than the hardware concurrency is not possible. There will be
+   * never more threads than what hardware concurrency allows.
+   */
   static void
   setParallelThreadCount(uint32_t count = Graph::hardwareConcurrency());
 
@@ -169,7 +196,7 @@ private:
 
   struct HiddenTypeMembers;
   std::shared_ptr<HiddenTypeMembers> hidden_;
-   
+
   std::map<std::string /*node name*/, size_t> nodeNameIndexMap_;
 
   /**
