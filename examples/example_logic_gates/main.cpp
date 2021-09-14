@@ -151,7 +151,7 @@ int main() {
   std::string filePath =
       "C:/Users/Sebastian/source/repos/ExecutionNodes/examples/concept_4.json";
 
-  GraphDefinition graphDef = loadGraphDefFromJson(filePath);
+  GraphDefinition graphDef = loadGraphDefFromJsonFile(filePath);
 
   Graph graph(graphDef, registry);
 
