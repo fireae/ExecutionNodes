@@ -260,28 +260,66 @@ void Graph::executeParallel() {
 
   helpers::Timer timer;
   timer.start();
-
   connector_->clearObjects();
+
+  // finished: The set of all nodes which have already been executed
   std::set<std::string> finished;
+  // running: The set of all nodes which are currently being executed
   std::set<std::string> running;
+  // queued: The set of all nodes waiting for being executed
   std::set<std::string> queued;
+  // This map contains for each node (name) a future object. The future object
+  // is used for determining whether the node has finished execution.
   std::map<std::string, std::future<bool>> futuresMap;
 
+  /*
+  Following algorithm is used for executing the nodes in parallel:
+  predecessorMap <- A map that contains a complete set of all predecessors for
+  each node. So for each node N we know which other nodes P1, P2, ... Pn must be
+  executed first in order to execute node N.
+
+
+  1. Put all nodes into the set of queued nodes Q
+  2. Let the set of all finished nodes F be an empty set {}
+
+  3. While the set of queued nodes Q is not empty, do:
+
+      4. Get all nodes N from the set of queued nodes Q where its predecessors
+  PN are a subset of the set of finished nodes F
+
+      5. Push all nodes N into a thread pool. Move them from the queued set Q to
+         the set of running nodes R
+
+      6. Now wait until at least one node is finished
+
+      7. Move all finished nodes from the set of running nodes R to the set of
+         finished nodes F
+
+      8. Goto 3.
+
+  9. Wait until all reamining running nodes are finished
+  */
+
+  // Step 1. Step 2. was already done implicitly when creating the set.
   for (auto it = nodes_.begin(); it != nodes_.end(); it++) {
     const Node *node = it->get();
     queued.insert(node->getName());
   }
 
+  // Step 3.
   while (queued.size() != 0) {
+
+    // Step 4.
     auto batch = helpers::getDependingNodes(finished, queued,
                                             hidden_->order.predecessorMap);
 
     std::string msg = "";
 
+    // Step 5.
     for (const auto &nodeName : batch) {
       auto iter = nodeNameIndexMap_.find(nodeName);
       if (iter != nodeNameIndexMap_.end()) {
-
+        // construct a fancy message
         if (msg == "") {
           msg = "Executing node(s) '" + nodeName + "'";
         } else {
@@ -290,13 +328,18 @@ void Graph::executeParallel() {
 
         size_t index = nodeNameIndexMap_[nodeName];
         Node *node = nodes_[index].get();
+        // remove from the set of queued nodes
         queued.erase(nodeName);
+        // add to the set of running nodes
         running.insert(nodeName);
+        // push the node execution into the thread pool and store the future.
+        // the future will be used to check whether a node is finished.
         futuresMap[nodeName] = threadPool.submit([node] { node->execute(); });
       }
     }
     LOG_DEBUG << msg << "\0";
     LOG_DEBUG << "Waiting...";
+    // Step 6. and Step 7.
     auto done = helpers::waitForAny(futuresMap, finished, running);
 
     LOG_DEBUG << "These node(s) are done: " << helpers::setToString(done);
@@ -307,6 +350,7 @@ void Graph::executeParallel() {
 
     LOG_DEBUG << "Waiting for " << stillRunning << " remaining nodes...";
   }
+  // Step 9.
   threadPool.wait_for_tasks();
   LOG_DEBUG << "All nodes are done.";
 
