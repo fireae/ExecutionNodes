@@ -20,14 +20,14 @@ ConnectionName createConnectionName(const PortId &out, const PortId &in) {
 ConnectionDefinition::ConnectionDefinition(const std::string &srcId,
                                            const std::string &dstId) {
 
-  auto srcTokens = split(srcId, ':');
+  auto srcTokens = helpers::split(srcId, ':');
   if (srcTokens.size() == 2) {
     src = Port(srcTokens[0], srcTokens[1]);
   } else {
     LOG_ERROR << "Invalid port id: " << srcId;
   }
 
-  auto dstTokens = split(dstId, ':');
+  auto dstTokens = helpers::split(dstId, ':');
   if (dstTokens.size() == 2) {
     dst = Port(dstTokens[0], dstTokens[1]);
   } else {

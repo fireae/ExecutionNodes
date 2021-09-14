@@ -9,7 +9,7 @@ namespace execution_nodes {
 
 Port portIdToPort(const std::string &str) {
   Port retval;
-  auto tokens = split(str, ':');
+  auto tokens = helpers::split(str, ':');
   if (tokens.size() != 2) {
     THROW_ERROR << "The string '" << str
                 << "' is no valid port definition. Please use for "

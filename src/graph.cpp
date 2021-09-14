@@ -44,7 +44,7 @@ void Graph::addNode(const NodeDefinition &node,
     bool nodeIsSrc = (c.src.nodeName == node.name);
     bool nodeIsDst = (c.dst.nodeName == node.name);
     if ((!nodeIsDst) && (!nodeIsSrc)) {
-      THROW_ERROR << "The connection '" << toString(c)
+      THROW_ERROR << "The connection '" << helpers::toString(c)
                   << "' does neither start nor end at the node '" << node.name
                   << "' to be added.";
     }
@@ -192,7 +192,7 @@ void Graph::addConnection(ConnectionDefinition connection, bool reorderNodes) {
 
     connections_.insert(connection);
     connector_->connect(connection.src, connection.dst);
-    LOG_DEBUG << "Added connection " << toString(connection);
+    LOG_DEBUG << "Added connection " << helpers::toString(connection);
   } else {
     LOG_WARNING << "Attempted to add a connection that does already exist.";
   }
@@ -211,7 +211,7 @@ void Graph::removeConnection(ConnectionDefinition connection,
     connections_.erase(iter);
   }
   connector_->disconnect(connection.src, connection.dst);
-  LOG_DEBUG << "Removed connection " << toString(connection);
+  LOG_DEBUG << "Removed connection " << helpers::toString(connection);
 
   if (reorderNodes) {
     sortNodes();
@@ -227,11 +227,10 @@ void Graph::execute(ExecutionMode mode) {
 }
 
 void Graph::executeSerial() {
-  using std::chrono::duration_cast;
-  using std::chrono::high_resolution_clock;
-  using std::chrono::milliseconds;
 
-  auto t1 = high_resolution_clock::now();
+  helpers::Timer timer;
+  timer.start();
+
   connector_->clearObjects();
 
   for (const auto &node : nodes_) {
@@ -248,12 +247,7 @@ void Graph::executeSerial() {
     }
   }
 
-  auto t2 = high_resolution_clock::now();
-
-  /* Getting number of milliseconds as an integer. */
-  auto ms_int = duration_cast<milliseconds>(t2 - t1);
-
-  LOG_DEBUG << "Execution took " << ms_int.count() << "ms";
+  LOG_DEBUG << "Execution took " << timer.stop() << "ms";
 }
 
 uint32_t Graph::getParallelThreadCount() {
@@ -262,74 +256,10 @@ uint32_t Graph::getParallelThreadCount() {
 
 void Graph::setParallelThreadCount(uint32_t count) { threadPool.reset(count); }
 
-inline bool isSubset(const std::set<std::string> &set,
-                     const std::vector<std::string> &candidate) {
-  return std::includes(set.begin(), set.end(), candidate.begin(),
-                       candidate.end());
-}
-
-std::set<std::string> getDependingNodes(const std::set<std::string> &finished,
-                                        const std::set<std::string> &queued,
-                                        const DependencyMap &predecessorMap) {
-  std::set<std::string> retval = {};
-
-  for (const auto &q : queued) {
-    auto predecessorIter = predecessorMap.find(q);
-    if (predecessorIter != predecessorMap.end()) {
-      const auto &predecessors = predecessorIter->second;
-      if (isSubset(finished, predecessors)) {
-        retval.insert(q);
-      }
-    }
-  }
-  return retval;
-}
-
-std::set<std::string>
-waitForAny(std::map<std::string, std::future<bool>> &futuresMap,
-           std::set<std::string> &finished, std::set<std::string> &running) {
-  std::set<std::string> done = {};
-
-  bool atLeastOneDone = false;
-  static const std::chrono::duration d = std::chrono::microseconds(10);
-  while (atLeastOneDone == false) {
-
-    auto iter = futuresMap.begin();
-
-    do {
-
-      auto status = iter->second.wait_for(d);
-      if (status == std::future_status::ready) {
-        finished.insert(iter->first);
-        running.erase(iter->first);
-        done.insert(iter->first);
-        iter = futuresMap.erase(iter);
-        atLeastOneDone = true;
-      } else {
-        iter++;
-      }
-
-    } while (iter != futuresMap.end());
-  }
-  return done;
-}
-
-inline std::string setToString(const std::set<std::string> set) {
-  std::string retval;
-  for (const auto &s : set) {
-
-    retval += ("'" + s + "' ");
-  }
-
-  return retval;
-}
-
 void Graph::executeParallel() {
-  using std::chrono::duration_cast;
-  using std::chrono::high_resolution_clock;
-  using std::chrono::milliseconds;
 
-  auto t1 = high_resolution_clock::now();
+  helpers::Timer timer;
+  timer.start();
 
   connector_->clearObjects();
   std::set<std::string> finished;
@@ -343,8 +273,8 @@ void Graph::executeParallel() {
   }
 
   while (queued.size() != 0) {
-    auto batch =
-        getDependingNodes(finished, queued, hidden_->order.predecessorMap);
+    auto batch = helpers::getDependingNodes(finished, queued,
+                                            hidden_->order.predecessorMap);
 
     std::string msg = "";
 
@@ -367,9 +297,9 @@ void Graph::executeParallel() {
     }
     LOG_DEBUG << msg << "\0";
     LOG_DEBUG << "Waiting...";
-    auto done = waitForAny(futuresMap, finished, running);
+    auto done = helpers::waitForAny(futuresMap, finished, running);
 
-    LOG_DEBUG << "These node(s) are done: " << setToString(done);
+    LOG_DEBUG << "These node(s) are done: " << helpers::setToString(done);
   }
 
   auto stillRunning = threadPool.get_tasks_running();
@@ -380,12 +310,7 @@ void Graph::executeParallel() {
   threadPool.wait_for_tasks();
   LOG_DEBUG << "All nodes are done.";
 
-  auto t2 = high_resolution_clock::now();
-
-  /* Getting number of milliseconds as an integer. */
-  auto ms_int = duration_cast<milliseconds>(t2 - t1);
-
-  LOG_DEBUG << "Parallel Execution took " << ms_int.count() << "ms";
+  LOG_DEBUG << "Parallel Execution took " << timer.stop() << "ms";
 }
 
 void Graph::sortNodes() {
@@ -404,7 +329,7 @@ void Graph::sortNodes() {
     const auto &node = *it;
     const auto &nodeName = node->getName();
 
-    size_t index = getIndexOfElement(
+    size_t index = helpers::getIndexOfElement(
         node->getName(), hidden_->order.linearExecutionOrder, false);
 
     if (index > hidden_->order.linearExecutionOrder.size()) {
@@ -422,9 +347,9 @@ void Graph::sortNodes() {
 
   std::sort(std::begin(nodes_), std::end(nodes_),
             [&](const NodePtr &a, const NodePtr &b) {
-              size_t aIdx = getIndexOfElement(
+              size_t aIdx = helpers::getIndexOfElement(
                   a->getName(), hidden_->order.linearExecutionOrder, true);
-              size_t bIdx = getIndexOfElement(
+              size_t bIdx = helpers::getIndexOfElement(
                   b->getName(), hidden_->order.linearExecutionOrder, true);
               return aIdx < bIdx;
             });
