@@ -95,6 +95,64 @@ So we can see that we have 4 nodes in there each with a distinct name. The first
 
 The last section is called connections and it contains a complete list of all connections we want to have in this graph.
 
+And how would we implement a Node that plays along in this graph?
+Let's take a close look:
+```cpp
+// Create a class which is derived from Node
+class OrGate : public execution_nodes::Node {
+
+public:
+  // The constructor must have this signature where it takes a
+  // NodeDefinition and a ConnectorPtr
+  OrGate(const NodeDefinition &definition, const ConnectorPtr &connector)
+      : execution_nodes::Node(definition, connector) {}
+
+  // We must override the execute() method which defines the nodes behaviour
+  void execute() override {
+    // i0 and i1 will be the inputs of the OR gate.
+    bool i0, i1;
+    // we obtain values for i0 and i1 by calling getInput.
+    getInput("i0", i0); // The first argument is the name of the port.
+    getInput("i1", i1); // The second arguments tells where the value should go. Just by convention it is best to keep the variable names and port names identical. But this is technically not necessary at all. 
+
+    // Do our OR operation, simple enough
+    bool o = i0 || i1;
+    // Set the result at the output port of the node
+    setOutput("o", o);
+  }
+};
+```
+
+That is it! The other gates we saw can be implemented in exactly the same way.
+But we are missing one last important concept, which is the settings we saw earlier in the `graph.json`. 
+Settings are extremely useful to inject information into the node at construction which can be used to determined the nodes behaviour.
+
+```cpp
+class RandomBool : public execution_nodes::Node 
+{
+
+public:
+  RandomBool(const NodeDefinition &definition, const ConnectorPtr &connector)
+      : execution_nodes::Node(definition, connector) 
+  {
+    // Simply call getSetting<>() and provide the key of the setting. 
+    uint64_t seed = getSetting<uint64_t>("seed");
+  }
+```
+
+The last piece missing is the NodeRegistry. In order for the graph to know how to construct a node of type "OrGate" we need to register it in the factory.
+Gladly, doing so is as easy as:
+```cpp
+static const NodeRegistry registry = {
+    REGISTER(RandomBool),  // Use the macro REGISTER to register the name of the node to the class name
+    REGISTER(AndGate2),    //
+    REGISTER(OrGate2),     //
+    REGISTER(NotGate),     //
+    REGISTER(NamedBoolPrinter), //
+};
+```
+
+
 ## Examples
 
 
