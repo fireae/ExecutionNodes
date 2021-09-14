@@ -6,11 +6,6 @@
 
 namespace execution_nodes {
 
-struct SortedNodes {
-  std::vector<std::string /*node name*/> linearExecutionOrder;
-  std::map<size_t, std::vector<std::string>> parallelExecutionMap;
-};
-
 typedef std::string PortId;
 typedef std::string ConnectionName;
 typedef std::string ConnectionId;
