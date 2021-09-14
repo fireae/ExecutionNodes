@@ -42,14 +42,14 @@ public:
    * graph.
    * @return std::string The name of the node.
    */
-  std::string getName();
+  std::string getName() const;
   /**
    * @brief Get the type of the node. The type is equal to the name of the
    * derived node class. Using the macro @ref will ensure this behaviour.
    *
    * @return std::string The type of the node.
    */
-  std::string getType();
+  std::string getType() const;
 
 protected:
   /**

@@ -37,7 +37,7 @@ void Node::getInputInternal(const std::string &portName, std::any &anyObj) {
   connector_->getObject(createPortId(name_, portName), anyObj);
 }
 
-std::string Node::getName() { return name_; }
-std::string Node::getType() { return type_; }
+std::string Node::getName() const { return name_; }
+std::string Node::getType() const { return type_; }
 
 } // namespace execution_nodes
