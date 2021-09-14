@@ -8,11 +8,10 @@ namespace execution_nodes {
 
 static thread_pool threadPool;
 
-/*
-struct Graph::Hidden {
-thread_pool threadPool;
+struct Graph::HiddenTypeMembers {
+
+  SortedNodes order;
 };
-*/
 
 std::string toString(const ConnectionDefinition &cn) {
   return cn.src.nodeName + ":" + cn.src.portName + " -> " + cn.dst.nodeName +
@@ -37,7 +36,8 @@ Graph::Graph(const GraphDefinition &graphDefinition,
              const NodeRegistry &registry)
     : name_(graphDefinition.name),
       connector_(std::shared_ptr<Connector>(new Connector())),
-      registry_(registry) {
+      registry_(registry),
+      hidden_(std::make_shared<HiddenTypeMembers>(HiddenTypeMembers())) {
   for (const auto &nodeDefinition : graphDefinition.nodes) {
     createAndAddNode(nodeDefinition);
   }
@@ -237,7 +237,6 @@ void Graph::removeConnection(ConnectionDefinition connection,
 }
 
 void Graph::execute(ExecutionMode mode) {
-
   if (mode == ExecutionMode::PARALLEL) {
     executeParallel();
   } else if (mode == ExecutionMode::SERIAL) {
@@ -246,7 +245,6 @@ void Graph::execute(ExecutionMode mode) {
 }
 
 void Graph::executeSerial() {
-
   using std::chrono::duration_cast;
   using std::chrono::high_resolution_clock;
   using std::chrono::milliseconds;
@@ -282,8 +280,69 @@ uint32_t Graph::getParallelThreadCount() {
 
 void Graph::setParallelThreadCount(uint32_t count) { threadPool.reset(count); }
 
-void Graph::executeParallel() {
+inline bool isSubset(const std::set<std::string> &set,
+                     const std::vector<std::string> &candidate) {
+  return std::includes(set.begin(), set.end(), candidate.begin(),
+                       candidate.end());
+}
 
+std::set<std::string> getDependingNodes(const std::set<std::string> &finished,
+                                        const std::set<std::string> &queued,
+                                        const DependencyMap &predecessorMap) {
+  std::set<std::string> retval = {};
+
+  for (const auto &q : queued) {
+    auto predecessorIter = predecessorMap.find(q);
+    if (predecessorIter != predecessorMap.end()) {
+      const auto &predecessors = predecessorIter->second;
+      if (isSubset(finished, predecessors)) {
+        retval.insert(q);
+      }
+    }
+  }
+  return retval;
+}
+
+std::set<std::string>
+waitForAny(std::map<std::string, std::future<bool>> &futuresMap,
+           std::set<std::string> &finished, std::set<std::string> &running) {
+  std::set<std::string> done = {};
+
+  bool atLeastOneDone = false;
+  static const std::chrono::duration d = std::chrono::microseconds(10);
+  while (atLeastOneDone == false) {
+
+    auto iter = futuresMap.begin();
+
+    do {
+
+      auto status = iter->second.wait_for(d);
+      if (status == std::future_status::ready) {
+        finished.insert(iter->first);
+        running.erase(iter->first);
+        done.insert(iter->first);
+        iter = futuresMap.erase(iter);
+        atLeastOneDone = true;
+      } else {
+        iter++;
+      }
+
+    } while (iter != futuresMap.end());
+  }
+  return done;
+}
+
+inline std::string setToString(const std::set<std::string> set) {
+  std::string retval;
+  for (const auto &s : set) {
+
+    retval += ("'" + s + "' ");
+  }
+
+  return retval;
+}
+
+void Graph::executeParallel() {
   using std::chrono::duration_cast;
   using std::chrono::high_resolution_clock;
   using std::chrono::milliseconds;
@@ -291,54 +350,60 @@ void Graph::executeParallel() {
   auto t1 = high_resolution_clock::now();
 
   connector_->clearObjects();
-  for (size_t rank = 0; rank < nodes_.size(); rank++) {
-    auto it = order_.parallelExecutionMap.find(rank);
-    if (it == order_.parallelExecutionMap.end()) {
-      continue;
-    } else {
-      std::vector<std::string> &nodesInRank = it->second;
+  std::set<std::string> finished;
+  std::set<std::string> running;
+  std::set<std::string> queued;
+  std::map<std::string, std::future<bool>> futuresMap;
 
-      size_t numberNodes = nodesInRank.size();
-      if (numberNodes == 0) {
-        continue;
-      } else if (numberNodes == 1) {
-        const auto &nodeName = nodesInRank[0];
-        size_t indexOfNode = nodeNameIndexMap_[nodeName];
-        auto &node = nodes_[indexOfNode];
-        LOG_DEBUG << "Executing node '" << nodeName << "'";
-        LOG_DEBUG << "...";
-        node->execute();
-        LOG_DEBUG << "Done";
-      } else {
-        std::string msg = "";
-        for (const auto &nodeName : nodesInRank) {
+  for (auto it = nodes_.begin(); it != nodes_.end(); it++) {
+    const Node *node = it->get();
+    queued.insert(node->getName());
+  }
 
-          if (msg == "") {
-            msg = "Executing nodes ";
-          } else {
-            msg += " | ";
-          }
-          msg += (" '" + nodeName + "'");
+  while (queued.size() != 0) {
+    auto batch =
+        getDependingNodes(finished, queued, hidden_->order.predecessorMap);
 
-          size_t indexOfNode = nodeNameIndexMap_[nodeName];
-          Node *node = nodes_[indexOfNode].get();
-          threadPool.push_task([node]() { node->execute(); });
+    std::string msg = "";
+
+    for (const auto &nodeName : batch) {
+      auto iter = nodeNameIndexMap_.find(nodeName);
+      if (iter != nodeNameIndexMap_.end()) {
+
+        if (msg == "") {
+          msg = "Executing node(s) '" + nodeName + "'";
+        } else {
+          msg += (" | '" + nodeName + "'");
         }
 
-        LOG_DEBUG << msg << '\0';
-        LOG_DEBUG << "...";
-        threadPool.wait_for_tasks();
-        LOG_DEBUG << "Done";
+        size_t index = nodeNameIndexMap_[nodeName];
+        Node *node = nodes_[index].get();
+        queued.erase(nodeName);
+        running.insert(nodeName);
+        futuresMap[nodeName] = threadPool.submit([node] { node->execute(); });
       }
     }
+    LOG_DEBUG << msg << "\0";
+    LOG_DEBUG << "Waiting...";
+    auto done = waitForAny(futuresMap, finished, running);
+
+    LOG_DEBUG << "These node(s) are done: " << setToString(done);
   }
+
+  auto stillRunning = threadPool.get_tasks_running();
+  if (stillRunning > 0) {
+
+    LOG_DEBUG << "Waiting for " << stillRunning << " remaining nodes...";
+  }
+  threadPool.wait_for_tasks();
+  LOG_DEBUG << "All nodes are done.";
 
   auto t2 = high_resolution_clock::now();
 
   /* Getting number of milliseconds as an integer. */
   auto ms_int = duration_cast<milliseconds>(t2 - t1);
 
-  LOG_DEBUG << "Execution in parallel took " << ms_int.count() << "ms";
+  LOG_DEBUG << "Parallel Execution took " << ms_int.count() << "ms";
 }
 
 void Graph::sortNodes() {
@@ -346,7 +411,7 @@ void Graph::sortNodes() {
 
   std::vector<ConnectionDefinition> connectionVector(connections_.begin(),
                                                      connections_.end());
-  order_ = getNodeExecutionOrder(connectionVector);
+  hidden_->order = getNodeExecutionOrder(connectionVector);
 
   nodeNameIndexMap_.clear();
 
@@ -357,10 +422,10 @@ void Graph::sortNodes() {
     const auto &node = *it;
     const auto &nodeName = node->getName();
 
-    size_t index =
-        getIndexOfElement(node->getName(), order_.linearExecutionOrder, false);
+    size_t index = getIndexOfElement(
+        node->getName(), hidden_->order.linearExecutionOrder, false);
 
-    if (index > order_.linearExecutionOrder.size()) {
+    if (index > hidden_->order.linearExecutionOrder.size()) {
       // remove this node
       it = nodes_.erase(it);
       LOG_DEBUG << "Node '" << nodeName
@@ -376,9 +441,9 @@ void Graph::sortNodes() {
   std::sort(std::begin(nodes_), std::end(nodes_),
             [&](const NodePtr &a, const NodePtr &b) {
               size_t aIdx = getIndexOfElement(
-                  a->getName(), order_.linearExecutionOrder, true);
+                  a->getName(), hidden_->order.linearExecutionOrder, true);
               size_t bIdx = getIndexOfElement(
-                  b->getName(), order_.linearExecutionOrder, true);
+                  b->getName(), hidden_->order.linearExecutionOrder, true);
               return aIdx < bIdx;
             });
 

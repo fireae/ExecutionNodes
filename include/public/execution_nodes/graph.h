@@ -167,7 +167,9 @@ private:
   // A list with all connections.
   std::set<ConnectionDefinition> connections_;
 
-  SortedNodes order_;
+  struct HiddenTypeMembers;
+  std::shared_ptr<HiddenTypeMembers> hidden_;
+   
   std::map<std::string /*node name*/, size_t> nodeNameIndexMap_;
 
   /**
