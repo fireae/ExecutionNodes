@@ -9,6 +9,8 @@ Other than most similar libraries out there, ExecutionNodes provides a standard 
 * Inject initial information packages into the graph using JSON
 * Connect the multiple inputs and outputs between nodes using names rather than indices
 * Define and load graphs using configuration files in JSON format
+* Add and remove connections between ports at any time during runtime
+* Add and remove nodes also any time at runtime
 
 ## Table of Contents
 
