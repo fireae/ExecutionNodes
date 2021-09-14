@@ -1,7 +1,7 @@
 #include <execution_nodes/graph.h>
 #include <execution_nodes/internal/connector.h>
 #include <execution_nodes/internal/helpers.h>
-#include <execution_nodes/internal/logging.hpp>
+#include <execution_nodes/internal/logging.h>
 #include <execution_nodes/internal/topological_sort.h>
 #include <execution_nodes/thirdparty/thread-pool-2.0.0/thread_pool.hpp>
 

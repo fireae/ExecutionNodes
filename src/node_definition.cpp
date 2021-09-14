@@ -1,4 +1,4 @@
-#include <execution_nodes/internal/logging.hpp>
+#include <execution_nodes/internal/logging.h>
 #include <execution_nodes/node_definition.h>
 
 namespace execution_nodes {

@@ -1,6 +1,6 @@
 #include <execution_nodes/graph_definition.h>
 #include <execution_nodes/internal/helpers.h>
-#include <execution_nodes/internal/logging.hpp>
+#include <execution_nodes/internal/logging.h>
 
 #include <execution_nodes/connection.h>
 #include <fstream>

@@ -1,6 +1,6 @@
 #include <execution_nodes/internal/helpers.h>
 #include <sstream>
-#include <execution_nodes/internal/logging.hpp>
+#include <execution_nodes/internal/logging.h>
 
 namespace execution_nodes {
 std::vector<std::string> split(const std::string &str, char delimiter) {

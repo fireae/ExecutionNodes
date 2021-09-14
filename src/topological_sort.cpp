@@ -1,4 +1,4 @@
-#include <execution_nodes/internal/logging.hpp>
+#include <execution_nodes/internal/logging.h>
 #include <execution_nodes/internal/topological_sort.h>
 
 #include <map>
