@@ -31,8 +31,8 @@
         [ "adder1:sum" , "adder2:b" ],
         [ "adder2:sum" , "divider:a" ],
         [ "adder1:sum" , "divider:b" ],
-        [ "divider:b" , "square:x" ],
         [ "divider:quotient" , "printer:number" ]
+
     ]
 }
 
