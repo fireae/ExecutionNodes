@@ -58,7 +58,7 @@ public:
 
     float x = 0;
     getInput("x", x);
-    setOutput("x2", x*x);
+    setOutput("x2", x * x);
   }
 };
 
@@ -102,15 +102,17 @@ int main() {
   };
 
   std::string filePath =
-      "C:/Users/Sebastian/source/repos/ExecutionNodes/examples/concept_2.json";
+      "C:/Users/Sebastian/source/repos/ExecutionNodes/examples/arithmetic.json";
 
-  GraphDefinition graphDef = loadGraphDefFromJson(filePath);
+  GraphDefinition graphDef = loadGraphDefFromJsonFile(filePath);
 
   Graph graph(graphDef, registry);
-
-  //while (true) {
+  while (true) {
+    // while (true) {
     graph.executeSerial();
-  //};
+    graph.executeParallel();
+    //};
+  }
 
   /*
   ConnectorPtr connector = std::make_shared<Connector>();
