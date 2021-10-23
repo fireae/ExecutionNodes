@@ -1,0 +1,41 @@
+{
+    "name": "Arithmetic Example",
+    "nodes": {
+        "printer": {
+            "type": "NumberPrinter"
+        },
+        "random0": {
+            "type": "RandomNumberGenerator",
+            "settings": {
+                "seed": 42
+            }
+        },
+        "square": {
+            "type": "Squarer"
+        },
+        "adder1": {
+            "type": "Adder"
+        },
+        "adder2": {
+            "type": "Adder"
+        },
+        "divider": {
+            "type": "Divider"
+        }
+    },
+    "connections": [
+        [ "random0:number" , "square:x" ],
+        [ "random0:number" , "adder1:a" ],
+        [ "square:x2" , "adder1:b" ],
+        [ "random0:number" , "adder2:a" ],
+        [ "adder1:sum" , "adder2:b" ],
+        [ "adder2:sum" , "divider:a" ],
+        [ "adder1:sum" , "divider:b" ],
+        [ "divider:b" , "square:x" ],
+        [ "divider:quotient" , "printer:number" ]
+    ]
+}
+
+
+
+

@@ -1,0 +1,32 @@
+{
+    "name": "Adder Example",
+    "nodes": {
+        "random0": {
+            "type": "RandomNumberGenerator",
+            "settings": {
+                "seed": 42
+            }
+        },
+        "random1": {
+            "type": "RandomNumberGenerator",
+            "settings": {
+                "seed": 69
+            }
+        },
+        "adder": {
+            "type": "Adder"
+        },
+        "printer": {
+            "type": "NumberPrinter"
+        }
+    },
+    "connections": [
+        [ "random0:number" , "adder:a" ],
+        [ "random1:number" , "adder:b" ],
+        [ "adder:sum" , "printer:number" ]
+    ]
+}
+
+
+
+
