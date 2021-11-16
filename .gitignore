@@ -13,3 +13,4 @@ _deps
 out/**
 build/**
 .vscode/**
+build_win/**/*
