@@ -47,17 +47,17 @@ Haven't found any library online which ticks all the checkmarks I desired, I dec
 
 ## Introduction
 First, I would like to introduce the main concepts.
-There is **nodes**, **ports** and **connections** between them. 
+There are `nodes`, which have `ports` and they have `connections` between them. 
 
-A node can have any number of input ports and any number of output ports. 
+`Ports` can be connected with eachother and they transport information (any C++ object) in and out of a `node`. They are categorized into `input ports` and `output ports`.
 
-Ports can be connected with eachother and they transport information (any C++ object) in and out of a node. Ports can be categorized into input ports and output ports.
+A `node` can have any number of `input ports` and any number of `output ports`. 
 
-You can connect any output port of a node to any number of input ports of any other node. Each input port can have no more than one connection. 
+You can connect any `output port` of a `node` to any number of `input ports` of any other `node`. Each `input port` can have only no connect or exactly one connection. 
 
 The information that leave and enter the nodes via the ports can be of any datatype you want (as long as it is moveable or copyable).   
 
-Since the nodes and its connections are represented as a directed asyclic graph, the system automatically resolves the dependencies and ensures that nodes are executed in the right order and the data packages are transferred to the right nodes. Because of that, node execution can be parallelized with the snap of your fingers, greatly reducing runtime for computational demanding processing pipelines.
+Since the nodes and its connections are represented as a directed asyclic graph, the system automatically resolves the dependencies and ensures that nodes are executed in the right order and the data packages are transferred to the right nodes. Because of that, node execution can be parallelized with the snap of your fingers, greatly reducing runtime for many computational demanding processing pipelines.
 
 
 ## Features
