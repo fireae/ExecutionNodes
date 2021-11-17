@@ -49,11 +49,11 @@ Haven't found any library online which ticks all the checkmarks I desired, I dec
 First, I would like to introduce the main concepts.
 There are `nodes`, which have `ports` and they have `connections` between them. 
 
-`Ports` can be connected with eachother and they transport information (any C++ object) in and out of a `node`. They are categorized into `input ports` and `output ports`.
+Ports can be connected with eachother and they transport information (any C++ object) in and out of a node. They are categorized into `input ports` and `output ports`.
 
-A `node` can have any number of `input ports` and any number of `output ports`. 
+A node can have any number of input ports and any number of output ports. 
 
-You can connect any `output port` of a `node` to any number of `input ports` of any other `node`. Each `input port` can have only no connect or exactly one connection. 
+You can connect any output port of a node to any number of input ports of any other node. Each input port can only have no connect or exactly one connection. 
 
 The information that leave and enter the nodes via the ports can be of any datatype you want (as long as it is moveable or copyable).   
 
