@@ -4,3 +4,5 @@ include_directories(thirdparty/CImg-v.2.9.9)
 add_executable(example_image_processing ${SOURCE_LIST})
 target_compile_features(example_image_processing PRIVATE cxx_std_17)
 target_link_libraries(example_image_processing PRIVATE lib_execution_nodes)
+
+SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
