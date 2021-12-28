@@ -54,12 +54,12 @@ public:
   void execute() {
     CImg<unsigned char> image;
     getInput("image", image);
-    // CImgDisplay display(image, windowName_.c_str());
-    /*
+    CImgDisplay display(image, windowName_.c_str());
+    
     while (!display.is_closed()) {
       display.wait();
     }
-    */
+    
   }
 
 private:
@@ -131,48 +131,46 @@ static const NodeRegistry registry = {
 
 int main() {
 
-  while (true) {
 
     CImg<unsigned char> image("C:\\Temp\\test.bmp");
     image.blur(2.3, true, true);
     CImg<unsigned char> binary(image.width(), image.height(), 1, 1, 0);
     cimg_forXY(image, x, y) {
-      int gray_value = image(x, y, 0, 0);
-      if (gray_value > 125) {
+        int gray_value = image(x, y, 0, 0);
+        if (gray_value > 125) {
         binary(x, y, 0, 0) = 255;
-      } else {
+        } else {
         binary(x, y, 0, 0) = 0;
-      }
+        }
     }
 
     CImg<unsigned char> image2("C:\\Temp\\test2.bmp");
     image2.blur(2.3, true, true);
     CImg<unsigned char> binary2(image2.width(), image2.height(), 1, 1, 0);
     cimg_forXY(image2, x, y) {
-      int gray_value = image2(x, y, 0, 0);
-      if (gray_value > 125) {
+        int gray_value = image2(x, y, 0, 0);
+        if (gray_value > 125) {
         binary2(x, y, 0, 0) = 255;
-      } else {
+        } else {
         binary2(x, y, 0, 0) = 0;
-      }
+        }
     }
 
     CImg<unsigned char> result(image.width(), image.height(), 1, 1, 0);
 
     cimg_forXY(image, x, y) {
-      result(x, y, 0, 0) = image(x, y, 0, 0) + image2(x, y, 0, 0);
+        result(x, y, 0, 0) = image(x, y, 0, 0) + image2(x, y, 0, 0);
     }
-  }
 
   // Graph::setLogVerbosity(Graph::LogLevel::LOG_INFO);
-  /*
+  
     while (true) {
-      std::string filePath =
-          "C:/Users/Sebastian/source/repos/ExecutionNodes/examples/concept_2.json";
+      std::string filePath ="\\\\wsl.localhost\\Ubuntu\\home\\git\\ExecutionNodes\\examples\\img_proc.json";
+          //"C:/Users/Sebastian/source/repos/ExecutionNodes/examples/concept_2.json";
       auto graphDef = loadGraphDefFromJsonFile(filePath);
       Graph graph(graphDef, registry);
       graph.execute(ExecutionMode::SERIAL);
       //graph.execute(ExecutionMode::PARALLEL);
     }
-  */
+  
 }

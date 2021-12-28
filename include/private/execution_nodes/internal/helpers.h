@@ -6,6 +6,7 @@
 #include <set>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 namespace execution_nodes {
 
@@ -51,8 +52,8 @@ struct Timer {
   long long stop();
 
 private:
-  std::chrono::steady_clock::time_point t1_;
-  std::chrono::steady_clock::time_point t2_;
+  std::chrono::high_resolution_clock::time_point t1_;
+  std::chrono::high_resolution_clock::time_point t2_;
 };
 
 } // namespace helpers

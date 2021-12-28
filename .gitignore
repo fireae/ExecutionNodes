@@ -14,3 +14,4 @@ out/**
 build/**
 .vscode/**
 bin/**
+build_win/**/*
