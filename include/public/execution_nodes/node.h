@@ -136,6 +136,17 @@ protected:
     }
     return T();
   }
+
+  /**
+   * @brief Get the entire settings object. Object must be nlohmann::json serializable 
+   * 
+   * @tparam T The json serializable data type of the settings 
+   * @return T The entire settings of that node as c++ object
+   */
+  template<class T> T getSettings() {
+    return settings_.get<T>();
+  }
+
   /**
    * @brief Get a list of all input port names. This can be useful if the node
    * shall expected a dynamic range of inputs.
