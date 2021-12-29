@@ -4,4 +4,6 @@ add_executable(example_arithmetic ${SOURCE_LIST})
 target_compile_features(example_arithmetic PRIVATE cxx_std_17)
 target_link_libraries(example_arithmetic PRIVATE lib_execution_nodes)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+if (UNIX)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+endif (UNIX)
