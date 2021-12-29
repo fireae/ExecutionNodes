@@ -16,7 +16,9 @@ target_compile_features(test_execution_nodes PRIVATE cxx_std_17)
 # Should be linked to the main library, as well as the Catch2 testing library
 target_link_libraries(test_execution_nodes PRIVATE lib_execution_nodes Catch2::Catch2WithMain)
 
-SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+if (UNIX)
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+endif (UNIX)
 
 # If you register a test, then ctest and make test will run it.
 # You can also run examples and check the output, as well.
