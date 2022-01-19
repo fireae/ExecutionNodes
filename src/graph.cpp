@@ -31,6 +31,11 @@ Graph::Graph(const GraphDefinition &graphDefinition,
   sortNodes();
 }
 
+void Graph::addNode(const NodeDefinition &node) {
+  createAndAddNode(node);
+  sortNodes();
+}
+
 void Graph::addNode(const NodeDefinition &node,
                     const std::vector<ConnectionDefinition> &connections) {
   if (connections.size() == 0) {

@@ -42,6 +42,15 @@ public:
   void addNode(const NodeDefinition &node,
                const std::vector<ConnectionDefinition> &connections);
 
+   /**
+   * @brief Add a new node to the graph without any connections from or to this
+   * node. After a new node was added, the nodes will be sorted.
+   *
+   * @param node The node to be added. Make sure the name of the node is unique
+   * for the graph.
+   */
+  void addNode(const NodeDefinition &node);
+
   /**
    * @brief Remove the node by the given node name. This will also remove all
    * connection to or from this node. After a node was removed, the nodes will
