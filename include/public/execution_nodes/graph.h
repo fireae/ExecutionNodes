@@ -131,6 +131,15 @@ public:
                         bool reorderNodes = true);
 
   /**
+  * @brief Get the pointer to a node by the name of the node. 
+  * 
+  * @param name The unique name of the node.
+  * @return A pointer to the node if the node can be found or a 
+  * nullptr if the node can not be found with the given name.
+  */
+  Node* getNodeByName(const std::string& name);
+
+  /**
    * @brief Get object from an output port of a node within the graph. This is a
    * way to extract object from the graph that would normally only be accessible
    * from within a connected node.
@@ -169,6 +178,12 @@ public:
     fakeOutputInternal(outputPort, object);
   }
 
+  /**
+   * @brief If set to true nodes without connections are allowed in the graph.
+   * If set to false nodes without connections are not allowed and will be 
+   * removed when sorting. Default is false.
+   */
+  bool allowIsolatedNodes = false;
 private:
   Graph() = default;
   /**

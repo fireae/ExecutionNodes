@@ -223,6 +223,16 @@ void Graph::removeConnection(ConnectionDefinition connection,
   }
 }
 
+Node *Graph::getNodeByName(const std::string &name) {
+
+    for(const auto& node : nodes_) {
+        if(node->getName() == name) {
+            return node.get();
+        }
+    }
+    return nullptr;
+}
+
 void Graph::execute(ExecutionMode mode) {
   if (mode == ExecutionMode::PARALLEL) {
     executeParallel();
@@ -381,7 +391,8 @@ void Graph::sortNodes() {
     size_t index = helpers::getIndexOfElement(
         node->getName(), hidden_->order.linearExecutionOrder, false);
 
-    if (index > hidden_->order.linearExecutionOrder.size()) {
+    if (!allowIsolatedNodes &&
+        (index > hidden_->order.linearExecutionOrder.size())) {
       // remove this node
       it = nodes_.erase(it);
       LOG_DEBUG << "Node '" << nodeName
