@@ -403,7 +403,7 @@ void Graph::sortNodes() {
               return aIdx < bIdx;
             });
 
-  LOG_DEBUG << "Order or execution after sorting:";
+  LOG_DEBUG << "Order of execution after sorting:";
 
   std::string nodeNameList = "";
   size_t index = 0;
