@@ -34,7 +34,7 @@ include(FetchContent)
 
 option(USE_EXTERNAL_NLOHMANN_JSON "Use an externally provided nlohmann JSON library" OFF)
 option(WITH_EXAMPLES "Build example projects showing usage of the library" OFF)
-option(USE_STATIC_LINKING "Option to use static linking." OFF)
+option(EXECUTION_NODES_STATIC "Option to use static linking." OFF)
 
 # FetchContent_MakeAvailable was not added until CMake 3.14; use our shim
 #if(${CMAKE_VERSION} VERSION_LESS 3.14)
