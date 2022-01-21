@@ -38,7 +38,9 @@ target_link_libraries(lib_execution_nodes PUBLIC nlohmann_json::nlohmann_json)
 # All users of this library will need at least C++17
 target_compile_features(lib_execution_nodes PUBLIC cxx_std_17)
 if (WIN32)
-  set(CMAKE_CXX_FLAGS_RELEASE "/MT")
+  if (USE_STATIC_LINKING)
+    set(CMAKE_CXX_FLAGS_RELEASE "/MT")
+  endif(USE_STATIC_LINKING)
 endif (WIN32)
 
 # IDEs should put the headers in a nice place
