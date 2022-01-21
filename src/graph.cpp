@@ -349,7 +349,7 @@ void Graph::executeParallel() {
         running.insert(nodeName);
         // push the node execution into the thread pool and store the future.
         // the future will be used to check whether a node is finished.
-        futuresMap[nodeName] = threadPool.submit([node] { node->execute(); });
+        futuresMap[nodeName] = threadPool.submit([node] { node->execute(); }); //todo: catch exceptions of the execute()
       }
     }
     LOG_DEBUG << msg << "\0";
