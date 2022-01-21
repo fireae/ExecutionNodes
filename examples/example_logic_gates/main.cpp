@@ -154,33 +154,6 @@ int main() {
   GraphDefinition graphDef = loadGraphDefFromJsonFile(filePath);
 
   Graph graph(graphDef, registry);
-
-  // while (true) {
   graph.executeSerial();
-  //};
 
-  /*
-  ConnectorPtr connector = std::make_shared<Connector>();
-
-  NodeDefinition defRng1("rng1", "RandomNumberGenerator", {{"seed", 42}});
-  NodeDefinition defRng2("rng2", "RandomNumberGenerator", {{"seed", 69}});
-  NodeDefinition defAdder("adder", "Adder");
-  NodeDefinition defPrinter("printer", "NumberPrinter");
-
-  std::unique_ptr<Node> node = registry.at("Adder")(defRng1, connector);
-
-  RandomNumberGenerator rng1(defRng1, connector);
-  RandomNumberGenerator rng2(defRng2, connector);
-  Adder adder(defAdder, connector);
-  NumberPrinter printer(defPrinter, connector);
-
-  connector->connect(Port("rng1", "number"), Port("adder", "a"));
-  connector->connect(Port("rng2", "number"), Port("adder", "b"));
-  connector->connect(Port("adder", "sum"), Port("printer", "number"));
-
-  rng1.execute();
-  rng2.execute();
-  adder.execute();
-  printer.execute();
-  */
 }
