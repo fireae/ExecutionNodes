@@ -148,8 +148,7 @@ static const NodeRegistry registry = {
 
 int main() {
 
-  std::string filePath =
-      "C:/Users/Sebastian/source/repos/ExecutionNodes/examples/concept_4.json";
+  std::string filePath = "./concept_4.json";
 
   GraphDefinition graphDef = loadGraphDefFromJsonFile(filePath);
 

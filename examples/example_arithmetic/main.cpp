@@ -14,7 +14,6 @@ public:
 
     uint64_t seed = getSetting<uint64_t>("seed");
     randomEngine_ = std::mt19937_64(seed);
-    randomEngine_.discard(10000000);
   }
 
   void execute() override {
@@ -101,8 +100,7 @@ int main() {
       REGISTER(NumberPrinter),
   };
 
-  std::string filePath =
-      "C:/Users/Sebastian/source/repos/ExecutionNodes/examples/arithmetic.json";
+  std::string filePath = "examples/arithmetic.json";
 
   GraphDefinition graphDef = loadGraphDefFromJsonFile(filePath);
 
@@ -114,28 +112,4 @@ int main() {
     //};
   }
 
-  /*
-  ConnectorPtr connector = std::make_shared<Connector>();
-
-  NodeDefinition defRng1("rng1", "RandomNumberGenerator", {{"seed", 42}});
-  NodeDefinition defRng2("rng2", "RandomNumberGenerator", {{"seed", 69}});
-  NodeDefinition defAdder("adder", "Adder");
-  NodeDefinition defPrinter("printer", "NumberPrinter");
-
-  std::unique_ptr<Node> node = registry.at("Adder")(defRng1, connector);
-
-  RandomNumberGenerator rng1(defRng1, connector);
-  RandomNumberGenerator rng2(defRng2, connector);
-  Adder adder(defAdder, connector);
-  NumberPrinter printer(defPrinter, connector);
-
-  connector->connect(Port("rng1", "number"), Port("adder", "a"));
-  connector->connect(Port("rng2", "number"), Port("adder", "b"));
-  connector->connect(Port("adder", "sum"), Port("printer", "number"));
-
-  rng1.execute();
-  rng2.execute();
-  adder.execute();
-  printer.execute();
-  */
 }

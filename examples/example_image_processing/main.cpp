@@ -166,11 +166,9 @@ int main() {
   
     while (true) {
       std::string filePath ="\\\\wsl.localhost\\Ubuntu\\home\\git\\ExecutionNodes\\examples\\img_proc.json";
-          //"C:/Users/Sebastian/source/repos/ExecutionNodes/examples/concept_2.json";
       auto graphDef = loadGraphDefFromJsonFile(filePath);
       Graph graph(graphDef, registry);
       graph.execute(ExecutionMode::SERIAL);
-      //graph.execute(ExecutionMode::PARALLEL);
     }
   
 }
