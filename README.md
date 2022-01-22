@@ -3,6 +3,8 @@
 [![Windows Build + Test](https://github.com/beyse/ExecutionNodes/actions/workflows/windows.yml/badge.svg)](https://github.com/beyse/ExecutionNodes/actions/workflows/windows.yml)
 [![Ubuntu Build + Test](https://github.com/beyse/ExecutionNodes/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/beyse/ExecutionNodes/actions/workflows/ubuntu.yml)
 
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/beyse)
+
 ExecutionNodes is a flexible reuse system for C++. It is based on the idea of [flow-based programming](https://en.wikipedia.org/wiki/Flow-based_programming). The library lets you build applications by connecting reusable building blocks called `Nodes`. The nodes and their connections form a graph which can be executed. The library supports parallel execution out of the box.
 
 You can think of it as a library that enables a micro-service architecture. Click [here](#appendix) if you are interested in a brief comparison. 
@@ -285,5 +287,3 @@ The table below clarifies the difference between Micro-Service Architectures and
 |  Language  | Can be any programming language and any number of languages   |  C++  |
 |  Loose Coupling  | Yes   |  Yes  |
 
-
-[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/beyse)
