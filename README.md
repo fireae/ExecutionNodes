@@ -285,3 +285,5 @@ The table below clarifies the difference between Micro-Service Architectures and
 |  Language  | Can be any programming language and any number of languages   |  C++  |
 |  Loose Coupling  | Yes   |  Yes  |
 
+
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/beyse)
