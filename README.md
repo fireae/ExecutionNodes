@@ -80,7 +80,7 @@ Since the nodes and its connections are represented as a directed asyclic graph,
 
 
 ## How to Build on Windows
-I used Windows 11
+Tested on Windows 11
 ### Prerequisits
 
 - Visual Studio 2019 or higher. You can get it from https://visualstudio.microsoft.com/de/downloads/
@@ -94,7 +94,7 @@ Run the build script
 ```
 
 ## How to Build on Linux
-I used Ubuntu 20.04.
+Tested on Ubuntu 20.04.
 
 ### Prerequisits
 - Build Tools for Linux
