@@ -221,7 +221,7 @@ public:
 };
 ```
 
-That is it! The other gates we saw can be implemented in exactly the same way.
+That is it! The other modes we saw can be implemented in exactly the same way.
 
 But we are missing one last important concept, which is the settings we saw earlier in the `graph.json`. 
 Settings are extremely useful to inject information into the node at construction which can be used to determined the nodes behaviour.
@@ -241,7 +241,7 @@ public:
 ...
 ```
 
-The last piece missing is the NodeRegistry. In order for the graph to know how to construct a node of type "OrGate" we need to register it in the factory.
+The last piece missing is the NodeRegistry. In order for the graph to know how to construct a node of type "Adder" we need to register it in the factory.
 Gladly, doing so is as easy as:
 ```cpp
 static const NodeRegistry registry = {
